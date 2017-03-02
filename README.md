@@ -1,7 +1,7 @@
 # Welcome to Thera [中文版](http://gitlab.alibaba-inc.com/project-falcon/Thera/wikis/readme-cn)
 ![](https://img.alicdn.com/tps/TB1meI7OVXXXXXcXXXXXXXXXXXX-1024-460.png)
 
-Thera is a develop tool aimed at improving mobile hybrid solution develop experience, such as weex, luaview, react native. It is built on top of Atom.
+Thera is a develop tool aimed at improving mobile hybrid solution develop experience, such as weex, luaview, react native. It is built on top of Atom.  
 Thera is founded by Alibaba, and managed by the open source community.  
 We embrace to open source, and hope you can join us.  
 You can follow us on Twitter, fire a bug on github issues, vote for new features, and make pull request.  
