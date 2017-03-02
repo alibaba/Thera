@@ -69,7 +69,7 @@ and restart Thera if simulators cannot be recognized. Because starting Simulator
  [GitLab](http://gitlab.alibaba-inc.com/project-falcon/Thera)
 
 #### macOS
-Download the latest [Thera release](http://www.google.com/)
+Download the latest [Thera release](https://github.com/alibaba/Thera/releases)
 
 #### Windows & Linux
 The new skyscraper is still under construction.
