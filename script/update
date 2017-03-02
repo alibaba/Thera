@@ -1,0 +1,178 @@
+#!/usr/bin/env node
+
+// update gitlab packges with names
+// default update all gitlab packages
+
+'use strict'
+
+const childProcess = require('child_process')
+const CONFIG = require('./config')
+const fsp = require('fs-promise')
+const path = require('path')
+const fs = require('fs')
+
+const TNPM_PATH = '/usr/local/bin/tnpm'
+const GITLAB_PERFIX = 'git+ssh'
+
+const argv = require('yargs')
+  .usage('Usage: $0 [options]')
+  .help('help')
+  .describe('name',  'update packages by name')
+  .describe('build', 'build package after updating')
+  .argv
+
+let packageToUpdate = []
+let report = new Map()
+
+if (argv.name) {
+  packageToUpdate = argv.name.split(',')
+} else {
+  let dependencies = require("../package.json").dependencies
+
+  for (let k in dependencies) {
+    if (dependencies.hasOwnProperty(k) && dependencies[k].startsWith(GITLAB_PERFIX)) {
+      packageToUpdate.push(k)
+    }
+  }
+
+  console.log('add param --name to update specific package')
+  console.log('automatic scan and update all gitlab packages')
+}
+
+console.log(`Updating packages: ${packageToUpdate}`)
+console.log(`${TNPM_PATH} install ${packageToUpdate.join(' ')}`)
+
+let p = new Promise((resolve, reject) => {
+  const sp = childProcess.spawn(TNPM_PATH, 
+    ['install'].concat(packageToUpdate), 
+    {cwd: CONFIG.repositoryRootPath})
+  sp.stdout.on('data', (data) => {
+    console.log(data.toString())
+  })
+  sp.stderr.on('data', (data) => {
+    console.warn(data.toString())
+  })
+  sp.on('close', (code) => {
+    console.log(`install finish with code ${code}`)
+    resolve()
+  })
+  resolve()
+})
+
+p
+.then(() => new Promise((resolve, reject) => {
+  const sp = childProcess.execFile(TNPM_PATH,
+    ['list', '--json', '--depth=0'], 
+    {cwd: CONFIG.repositoryRootPath, maxBuffer: 5000 * 1024}, 
+    (error, stdout, stderr) => {
+      // if (error) {
+      //   console.log(stdout)
+      //   reject(error)
+      // } else {
+      // console.log(stdout)
+      let npmErrorIndex = stdout.indexOf('npm ERR!')
+      let info = npmErrorIndex>0 ? stdout.substring(0, npmErrorIndex) : stdout
+      fs.writeFileSync('./list.json', info)
+      // console.log(info)
+      let versionInfo = JSON.parse(info)
+      // console.log(versionInfo)
+      let packages = require('../package.json')
+      packageToUpdate.forEach(e => {
+        if (versionInfo.dependencies[e]) {
+          packages.packageDependencies[e] = versionInfo.dependencies[e].version
+          report.set(e, versionInfo.dependencies[e].version)
+          console.log(`update ${e} to version ${versionInfo.dependencies[e].version}`)
+        } else {
+          console.log('not valid updated version number.')
+          console.log(versionInfo.dependencies[e])
+          reject('not valid updated version number.')
+        }
+      })
+      resolve(packages)
+      // }
+    })
+}))
+.then((packages) => {
+  console.log(`writting to ${path.join(CONFIG.repositoryRootPath, 'package.json')} ...`)
+  // console.log(packages.packageDependencies)
+  return fsp.writeJson(path.join(CONFIG.repositoryRootPath, 'package.json'), packages)
+})
+.then(() => {
+  console.log('update succeed.')
+})
+.then(() => new Promise((resolve, reject) => {
+  console.log('install attach packages ...')
+  const sp = childProcess.spawn(TNPM_PATH, ['install'], {cwd: path.join(CONFIG.repositoryRootPath, 'attach-package'),})
+    sp.stdout.on('data', (data) => {
+    console.log(data.toString())
+  })
+  sp.stderr.on('data', (data) => {
+    console.warn(data.toString())
+  })
+  sp.on('close', (code) => {
+    console.log(`install finish with code ${code}`)
+    resolve()
+  })
+}))
+// .then(() => new Promise((resolve, reject) => {
+//   const sp = childProcess.execFile(TNPM_PATH,
+//     ['list', '--json', '--depth=0'], 
+//     {cwd: path.join(CONFIG.repositoryRootPath, 'attach-package'), maxBuffer: 5000 * 1024}, 
+//     (error, stdout, stderr) => {
+//       // if (error) {
+//       //   console.log(stdout)
+//       //   reject(error)
+//       // } else {
+//       let npmErrorIndex = stdout.indexOf('npm ERR!')
+//       stdout = npmErrorIndex>0 ? stdout.substring(0, npmErrorIndex) : stdout
+//       console.log(stdout)
+//       let versionInfo = JSON.parse(stdout)
+//       // console.log(versionInfo)
+//       // let packages = require('../package.json')
+//       packageToUpdate.forEach(e => {
+//         if (versionInfo.dependencies[e]) {
+//           // packages.packageDependencies[e] = versionInfo.dependencies[e].version
+//           report.set(e, versionInfo.dependencies[e].version)
+//           console.log(`update ${e} to version ${versionInfo.dependencies[e].version}`)
+//           // resolve(packages)
+//         } else {
+//           console.log('not valid updated version number.')
+//           console.log(versionInfo.dependencies[e])
+//           reject()
+//         }
+//       })
+//       resolve()
+//       // }
+//     })
+// }))
+// .then(() => new Promise((resolve, reject) => {
+//   if (argv.build) {
+//     console.log('start to install package')
+//     const sp = childProcess.spawn(
+//       '/bin/sh', 
+//       [path.join(CONFIG.repositoryRootPath, 'full-build.sh')], 
+//       {cwd: CONFIG.repositoryRootPath}
+//     )
+//     sp.stdout.on('data', (data) => {
+//       console.log(data.toString())
+//     })
+//     sp.stderr.on('data', (data) => {
+//       console.warn(data.toString())
+//     })
+//     sp.on('close', (code) => {
+//       console.log(`install finish with code ${code}`)
+//       resolve()
+//     })
+//   } else {
+//     console.log('skip packaging')
+//   }
+// }))
+// .then(() => new Promise((resolve, reject) => {
+//   console.log('========================================================')
+//   report.forEach((value, key) => {
+//     console.log(`${key}@${value}`)
+//   })
+// })) 
+.catch((err) => {
+  console.log(err)
+})

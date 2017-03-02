@@ -1,0 +1,10 @@
+ali_source 'alibaba-specs'
+ali_source 'alibaba-specs-mirror'
+
+target 'ALiWLog' do
+
+platform:ios,	'7.0'
+
+pod  'TRemoteDebugger',     '1.1.3.17'
+
+end
