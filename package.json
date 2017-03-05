@@ -68,7 +68,7 @@
     "text-buffer": "9.3.0",
     "thera-debugger": "git+ssh://git@gitlab.alibaba-inc.com:xueqiu.lxq/thera-debugger.git",
     "thera-left-bar": "git+ssh://git@gitlab.alibaba-inc.com:xiaoshu.wb/Thera-left-bar.git",
-    "thera-mock": "git+ssh://git@gitlab.alibaba-inc.com:project-falcon/thera-mock.git",
+    "thera-mock": "git+ssh://git@github.com:TheraPackages/thera-mock.git",
     "tool-bar": "git+ssh://git@gitlab.alibaba-inc.com:xiaoshu.wb/tool-bar.git",
     "tool-bar-main": "git+ssh://git@gitlab.alibaba-inc.com:xiaoshu.wb/tool-bar-main.git",
     "typescript-simple": "1.0.0",
