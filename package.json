@@ -22,7 +22,7 @@
     "babel-core": "5.8.38",
     "cached-run-in-this-context": "0.4.1",
     "chai": "3.5.0",
-    "chart-d3": "git+ssh://git@gitlab.alibaba-inc.com:xiaoshu.wb/chart-3d.git",
+    "chart-d3": "git+https://github.com/TheraPackages/chart-3d.git",
     "clear-cut": "^2.0.1",
     "coffee-script": "1.8.0",
     "color": "^0.7.3",
