@@ -26,7 +26,7 @@
     "clear-cut": "^2.0.1",
     "coffee-script": "1.8.0",
     "color": "^0.7.3",
-    "console-panel": "git+ssh://git@gitlab.alibaba-inc.com:xiaoshu.wb/console-panel.git",
+    "console-panel": "git+https://github.com/TheraPackages/console-panel.git",
     "create-files": "git+ssh://git@gitlab.alibaba-inc.com:xiaoshu.wb/create-files.git",
     "dedent": "^0.6.0",
     "devtron": "1.1.0",
