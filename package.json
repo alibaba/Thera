@@ -27,7 +27,7 @@
     "coffee-script": "1.8.0",
     "color": "^0.7.3",
     "console-panel": "git+https://github.com/TheraPackages/console-panel.git",
-    "create-files": "git+ssh://git@gitlab.alibaba-inc.com:xiaoshu.wb/create-files.git",
+    "create-files": "git+https://github.com/TheraPackages/create-files.git",
     "dedent": "^0.6.0",
     "devtron": "1.1.0",
     "event-kit": "^2.1.0",
