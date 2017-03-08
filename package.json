@@ -15,7 +15,6 @@
   "license": "MIT",
   "electronVersion": "1.3.6",
   "dependencies": {
-    "about": "git+ssh://git@gitlab.alibaba-inc.com:project-falcon/about.git",
     "async": "0.2.6",
     "atom-keymap": "7.0.6-beta0",
     "atom-ui": "0.4.1",
@@ -169,7 +168,7 @@
     "language-toml": "0.18.0",
     "language-xml": "0.34.10",
     "language-yaml": "0.27.0",
-    "about": "1.7.0",
+    "thera-about": "0.1.0",
     "chart-d3": "0.0.0",
     "console-panel": "0.2.2",
     "create-files": "0.0.0",
