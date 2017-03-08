@@ -77,7 +77,8 @@
     "we-syntax": "git+ssh://git@gitlab.alibaba-inc.com:dennis.dx/we-syntax.git",
     "weex-run": "git+ssh://git@gitlab.alibaba-inc.com:project-falcon/weex-run.git",
     "winreg": "^1.2.1",
-    "yargs": "^3.23.0"
+    "yargs": "^3.23.0",
+    "thera-background-tips": "git+ssh://git@github.com:TheraPackages/background-tips.git"
   },
   "packageDependencies": {
     "mainwindow": "0.0.6",
@@ -110,7 +111,7 @@
     "autocomplete-snippets": "1.11.0",
     "autoflow": "0.27.0",
     "autosave": "0.23.1",
-    "background-tips": "0.26.1",
+    "thera-background-tips": "0.1.2",
     "bookmarks": "0.42.0",
     "bracket-matcher": "0.82.2",
     "command-palette": "0.38.0",
