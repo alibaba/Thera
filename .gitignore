@@ -2,3 +2,4 @@ attach-package
 list.json
 node_modules
 typescript
+npm-debug.log

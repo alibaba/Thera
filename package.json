@@ -67,7 +67,7 @@
     "text-buffer": "9.3.0",
     "thera-debugger": "git+ssh://git@gitlab.alibaba-inc.com:xueqiu.lxq/thera-debugger.git",
     "thera-left-bar": "git+ssh://git@gitlab.alibaba-inc.com:xiaoshu.wb/Thera-left-bar.git",
-    "thera-mock": "git+ssh://git@github.com:TheraPackages/thera-mock.git",
+    "thera-mock": "git+https://github.com/TheraPackages/thera-mock.git",
     "tool-bar": "git+https://github.com/TheraPackages/tool-bar.git",
     "tool-bar-main": "git+https://github.com/TheraPackages/tool-bar-main.git",
     "typescript-simple": "1.0.0",
@@ -77,7 +77,7 @@
     "weex-run": "git+ssh://git@gitlab.alibaba-inc.com:project-falcon/weex-run.git",
     "winreg": "^1.2.1",
     "yargs": "^3.23.0",
-    "thera-background-tips": "git+ssh://git@github.com:TheraPackages/background-tips.git"
+    "thera-background-tips": "git+https://github.com/TheraPackages/background-tips.git"
   },
   "packageDependencies": {
     "language-we": "0.0.6",
@@ -101,7 +101,6 @@
     "autocomplete-snippets": "1.11.0",
     "autoflow": "0.27.0",
     "autosave": "0.23.1",
-    "thera-background-tips": "0.1.2",
     "bookmarks": "0.42.0",
     "bracket-matcher": "0.82.2",
     "command-palette": "0.38.0",
@@ -192,7 +191,7 @@
     "symbols-tree-view": "git+https://github.com/TheraPackages/symbols-tree-view.git",
     "linter-weex": "git+https://github.com/TheraPackages/linter-weex.git",
     "linter": "git+https://github.com/TheraPackages/linter.git",
-	"autocomplete-weex": "git+https://github.com/TheraPackages/autocomplete-weex.git"
+    "autocomplete-weex": "git+https://github.com/TheraPackages/autocomplete-weex.git"
   },
   "standard": {
     "ignore": [],
