@@ -191,7 +191,8 @@
     "dumplings": "1.0.1",
     "symbols-tree-view": "git+https://github.com/TheraPackages/symbols-tree-view.git",
     "linter-weex": "git+https://github.com/TheraPackages/linter-weex.git",
-    "linter": "git+https://github.com/TheraPackages/linter.git"
+    "linter": "git+https://github.com/TheraPackages/linter.git",
+	"autocomplete-weex": "git+https://github.com/TheraPackages/autocomplete-weex.git"
   },
   "standard": {
     "ignore": [],
