@@ -13,6 +13,7 @@ const fs = require('fs')
 
 const TNPM_PATH = '/usr/local/bin/tnpm'
 const GITLAB_PERFIX = 'git+ssh'
+const GITHUB_PERFIX = 'git+https'
 
 const argv = require('yargs')
   .usage('Usage: $0 [options]')
@@ -30,7 +31,7 @@ if (argv.name) {
   let dependencies = require("../package.json").dependencies
 
   for (let k in dependencies) {
-    if (dependencies.hasOwnProperty(k) && dependencies[k].startsWith(GITLAB_PERFIX)) {
+    if (dependencies.hasOwnProperty(k) && (dependencies[k].startsWith(GITLAB_PERFIX) || dependencies[k].startsWith(GITHUB_PERFIX))) {
       packageToUpdate.push(k)
     }
   }
