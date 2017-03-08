@@ -189,7 +189,7 @@
   "attach-package": {
     "seti-ui": "git+ssh://git@gitlab.alibaba-inc.com:project-falcon/seti-ui.git",
     "dumplings": "1.0.1",
-    "symbols-tree-view": "git+ssh://git@gitlab.alibaba-inc.com:xiaoshu.wb/symbols-tree-view.git",
+    "symbols-tree-view": "git+https://github.com/TheraPackages/symbols-tree-view.git",
     "linter-weex": "git+ssh://git@gitlab.alibaba-inc.com:dennis.dx/linter-weex.git",
     "linter": "git+ssh://git@gitlab.alibaba-inc.com:dennis.dx/linter.git"
   },
