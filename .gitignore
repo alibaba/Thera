@@ -4,3 +4,6 @@ node_modules
 typescript
 npm-debug.log
 out
+docs
+electron
+.DS_Store
