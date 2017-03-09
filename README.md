@@ -65,8 +65,6 @@ and restart Thera if simulators cannot be recognized. Because starting Simulator
 
 
 ## Installing
-#### Prerequisites
- [GitLab](http://gitlab.alibaba-inc.com/project-falcon/Thera)
 
 #### macOS
 Download the latest [Thera release](https://github.com/alibaba/Thera/releases)
@@ -74,6 +72,12 @@ Download the latest [Thera release](https://github.com/alibaba/Thera/releases)
 #### Windows & Linux
 The new skyscraper is still under construction.
 
+## Building 
+Building from source is still under construction, you can check out [thera packages](https://github.com/TheraPackages)
+
+ 
+## Restrictions
+* Vue 2.0 is not supported for now. 
 
 
 ## PMC Members & Committers
