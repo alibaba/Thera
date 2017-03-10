@@ -65,7 +65,7 @@
     "source-map-support": "^0.3.2",
     "temp": "0.8.1",
     "text-buffer": "9.3.0",
-    "thera-debugger": "git+ssh://git@gitlab.alibaba-inc.com:xueqiu.lxq/thera-debugger.git",
+    "thera-debugger": "git+ssh://git@github.com:TheraPackages/thera-debugger.git",
     "thera-left-bar": "git+ssh://git@gitlab.alibaba-inc.com:xiaoshu.wb/Thera-left-bar.git",
     "thera-mock": "git+https://github.com/TheraPackages/thera-mock.git",
     "tool-bar": "git+https://github.com/TheraPackages/tool-bar.git",
