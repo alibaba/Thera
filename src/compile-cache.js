@@ -136,9 +136,9 @@ require('source-map-support').install({
 	
 	// NOTE: resove no file externtion
 	// path = "build" 的时候这里会undefined
-	if (!complier) {
-		compiler = COMPILERS['.js']
-	}
+	// if (!complier) {
+	// 	compiler = COMPILERS['.js']
+	// }
 
     try {
       var fileData = readCachedJavascript(compiler.getCachePath(sourceCode, filePath))

@@ -12,12 +12,12 @@
     "registry": "http://registry.npm.alibaba-inc.com"
   },
   "dependencies": {
-    "atom-notifier": "git+ssh://git@gitlab.alibaba-inc.com:project-falcon/atom-notifier.git",
-    "dumplings": "git+ssh://git@gitlab.alibaba-inc.com:project-falcon/dumplings.git",
-    "file-icons": "git+https://github.com/file-icons/atom.git",
-    "linter": "git+ssh://git@gitlab.alibaba-inc.com:dennis.dx/linter.git",
-    "linter-weex": "git+ssh://git@gitlab.alibaba-inc.com:dennis.dx/linter-weex.git",
-    "seti-ui": "git+ssh://git@gitlab.alibaba-inc.com:project-falcon/seti-ui.git",
-    "symbols-tree-view": "git+ssh://git@gitlab.alibaba-inc.com:xiaoshu.wb/symbols-tree-view.git"
+    "dumplings": "1.0.1",
+    "linter": "git+https://github.com/TheraPackages/linter.git",
+    "linter-weex": "git+https://github.com/TheraPackages/linter-weex.git",
+    "seti-ui": "git+https://github.com/TheraPackages/thera-seti-ui.git",
+    "symbols-tree-view": "git+https://github.com/TheraPackages/symbols-tree-view.git",
+    "autocomplete-weex": "git+https://github.com/TheraPackages/autocomplete-weex.git",
+    "weex-run": "git+https://github.com/TheraPackages/weex-run.git"
   }
 }

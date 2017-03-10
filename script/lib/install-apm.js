@@ -8,16 +8,16 @@ const CONFIG = require('../config')
 
 module.exports = function () {
 
-  let stats = fs.statSync(path.join(CONFIG.apmRootPath, 'node_modules/atom-package-manager/lib/cli.js'))
-  if (!stats.isFile()) {
+  let exist = fs.existsSync(path.join(CONFIG.apmRootPath, 'node_modules/atom-package-manager/lib/cli.js'))
+  if (!exist) {
     childProcess.execFileSync(
-      CONFIG.getTnpmBinPath(),
+      CONFIG.getNpmBinPath(),
       ['--global-style', '--loglevel=error', 'install'],
       {env: process.env, cwd: CONFIG.apmRootPath}
     )
 
     childProcess.execFileSync(
-      CONFIG.getTnpmBinPath(),
+      CONFIG.getNpmBinPath(),
       ['--global-style', '--loglevel=error', 'install'],
       {env: process.env, cwd: path.join(CONFIG.apmRootPath, 'node_modules', 'atom-package-manager')}
     )
