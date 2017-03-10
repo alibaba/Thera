@@ -3,11 +3,11 @@
   "description": "Atom's bundled apm",
   "repository": {
     "type": "git",
-    "url": "https://github.com/atom/atom.git"
+    "url": "https://github.com/TheraPackages/apm.git"
   },
   "scripts": {
   },
   "dependencies": {
-    "atom-package-manager": "git+ssh://git@gitlab.alibaba-inc.com:project-falcon/apm-thera.git#develop"
+    "atom-package-manager": "git+https://github.com/TheraPackages/apm.git"
   }
 }
