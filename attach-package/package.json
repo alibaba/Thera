@@ -12,7 +12,7 @@
     "registry": "http://registry.npm.alibaba-inc.com"
   },
   "dependencies": {
-    "dumplings": "1.0.1",
+    "dumplings": "git+ssh://git@gitlab.alibaba-inc.com:project-falcon/dumplings.git",
     "linter": "git+https://github.com/TheraPackages/linter.git",
     "linter-weex": "git+https://github.com/TheraPackages/linter-weex.git",
     "seti-ui": "git+https://github.com/TheraPackages/thera-seti-ui.git",
