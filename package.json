@@ -80,6 +80,7 @@
 	"thera-autocomplete-plus-plus": "git+https://github.com/TheraPackages/thera-autocomplete-plus-plus.git"
   },
   "packageDependencies": {
+    "file-icons": "2.0.17",
     "language-we": "0.0.7",
     "atom-dark-syntax": "0.27.0",
     "atom-dark-ui": "0.52.0",
