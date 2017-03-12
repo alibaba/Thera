@@ -5,9 +5,9 @@
 const cleanDependencies = require('./lib/clean-dependencies')
 const deleteMsbuildFromPath = require('./lib/delete-msbuild-from-path')
 const dependenciesFingerprint = require('./lib/dependencies-fingerprint')
+const installScriptDependencies = require('./lib/install-script-dependencies')
 const installApm = require('./lib/install-apm')
 const installAtomDependencies = require('./lib/install-atom-dependencies')
-const installScriptDependencies = require('./lib/install-script-dependencies')
 const verifyMachineRequirements = require('./lib/verify-machine-requirements')
 
 process.on('unhandledRejection', function (e) {
