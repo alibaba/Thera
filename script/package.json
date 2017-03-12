@@ -11,7 +11,7 @@
     "donna": "1.0.13",
     "electron-packager": "7.3.0",
     "electron-winstaller": "2.3.4",
-    "fs-extra": "0.30.0",
+    "fs-extra": "^0.30.0",
     "fs-promise": "~1.0.0",
     "glob": "7.0.3",
     "joanna": "0.0.6",
@@ -26,7 +26,7 @@
     "season": "5.3.0",
     "semver": "5.3.0",
     "standard": "6.0.0",
-    "sync-request": "3.0.1",
+    "sync-request": "^3.0.1",
     "tello": "1.0.5",
     "webdriverio": "2.4.5",
     "yargs": "4.8.1"
