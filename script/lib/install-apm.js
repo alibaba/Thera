@@ -3,7 +3,6 @@
 const childProcess = require('child_process')
 const path = require('path')
 const fs = require('fs')
-const fsextra = require('fs-extra')
 
 const CONFIG = require('../config')
 const downloadFileFromGithub = require('./download-file-from-github')
@@ -16,7 +15,6 @@ module.exports = function () {
     const apmRepoPath = CONFIG.apmMetadata.repository['url']
     console.log(`download code from ${apmRepoPath}`)
     const apmPath = path.join(CONFIG.apmRootPath, 'node_modules', 'atom-package-manager')
-    fsextra.ensureDirSync(apmPath)
     downloadFileFromGithub(apmRepoPath, apmPath)
 
     console.log(`${CONFIG.getNpmBinPath()} install ${apmPath}`)
