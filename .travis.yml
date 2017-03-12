@@ -4,6 +4,13 @@ os:
 language: node_js
 node_js:
   - "6.7.0"
-  
+
+install:
+  - npm install
+  - cd script && npm install
+
 script:
   script/build
+
+cache:
+  npm
