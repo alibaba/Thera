@@ -7,6 +7,7 @@ const fsextra = require('fs-extra')
 
 const CONFIG = require('../config')
 const downloadFileFromGithub = require('./download-file-from-github')
+require('colors')
 
 module.exports = function () {
 
@@ -25,6 +26,6 @@ module.exports = function () {
       {env: process.env, cwd: path.join(CONFIG.apmRootPath, 'node_modules', 'atom-package-manager')}
     )
   } else {
-    console.log('Apm install')
+    console.log('Apm already installed, Skipping'.gray)
   }
 }
