@@ -2,7 +2,7 @@
   "name": "thera",
   "productName": "Thera",
   "version": "1.12.5-dev",
-  "theraVersion": "0.4.12-beta.2",
+  "theraVersion": "0.4.12-beta.4",
   "description": "A Weex IDE",
   "main": "./src/main-process/main.js",
   "repository": {
@@ -25,7 +25,7 @@
     "clear-cut": "^2.0.1",
     "coffee-script": "1.8.0",
     "color": "^0.7.3",
-    "console-panel": "git+https://github.com/TheraPackages/console-panel.git",
+    "console-panel": "git+https://github.com/TheraPackages/console-panel.git#v0.2.3",
     "create-files": "git+https://github.com/TheraPackages/create-files.git",
     "dedent": "^0.6.0",
     "devtron": "1.1.0",
@@ -68,8 +68,8 @@
     "text-buffer": "9.3.0",
     "thera-debugger": "git+https://github.com/TheraPackages/thera-debugger.git",
     "thera-mock": "git+https://github.com/TheraPackages/thera-mock.git",
-    "tool-bar": "git+https://github.com/TheraPackages/tool-bar.git",
-    "tool-bar-main": "git+https://github.com/TheraPackages/tool-bar-main.git",
+    "tool-bar": "git+https://github.com/TheraPackages/tool-bar.git#v1.0.2",
+    "tool-bar-main": "git+https://github.com/TheraPackages/tool-bar-main.git#v0.1.0",
     "typescript-simple": "1.0.0",
     "underscore-plus": "^1.6.6",
     "vue-template-compiler": "~2.1.8",
@@ -80,7 +80,6 @@
 	"thera-autocomplete-plus-plus": "git+https://github.com/TheraPackages/thera-autocomplete-plus-plus.git"
   },
   "packageDependencies": {
-    "file-icons": "2.0.17",
     "language-we": "0.0.7",
     "atom-dark-syntax": "0.27.0",
     "atom-dark-ui": "0.52.0",
@@ -170,13 +169,13 @@
     "language-yaml": "0.27.0",
     "thera-about": "0.1.1",
     "chart-d3": "0.0.0",
-    "console-panel": "0.2.2",
+    "console-panel": "0.2.3",
     "create-files": "0.0.0",
     "mainwindow": "0.0.6",
     "thera-debugger": "1.0.0",
     "thera-mock": "0.1.1",
-    "tool-bar": "1.0.1",
-    "tool-bar-main": "0.0.9",
+    "tool-bar": "1.0.2",
+    "tool-bar-main": "0.1.0",
     "we-syntax": "0.0.3",
     "thera-background-tips": "0.1.4"
   },
@@ -186,6 +185,7 @@
     "test": "node script/test"
   },
   "attach-package": {
+    "file-icons": "git+https://github.com/file-icons/atom.git#v2.0.17",
     "seti-ui": "git+ssh://git@gitlab.alibaba-inc.com:project-falcon/seti-ui.git",
     "dumplings": "2.0.1",
     "symbols-tree-view": "git+https://github.com/TheraPackages/symbols-tree-view.git",

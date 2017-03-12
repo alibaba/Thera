@@ -8,6 +8,7 @@ const getLicenseText = require('./get-license-text')
 const path = require('path')
 const spawnSync = require('./spawn-sync')
 const mkdirp = require('mkdirp')
+require('colors')
 
 const CONFIG = require('../config')
 
@@ -72,24 +73,36 @@ function installAttachPackages(packagedAppPath, bundledResourcesPath) {
       let gitPath = attachPackage[key]
       let packagePath = path.join(CONFIG.repositoryRootPath, 'attach-package')
 
-      if (fs.statSync(path.join(packagePath, 'node_modules', key)).isDirectory()) {
+      if (fs.existsSync(path.join(packagePath, 'node_modules', key))) {
         console.log(`skip package ${key} install`.gray)
         return;
       }
 
-      console.log(`Install package ${key} to ${packagePath}`)
-      childProcess.execFileSync(
-        CONFIG.getNpmBinPath(),
-        ['--global-style', '--loglevel=error', 'install', gitPath],
-        {env: process.env, cwd: packagePath, stdio:'inherit'}
-      )
+      try {
+        if (gitPath.startsWith('git') || gitPath.startsWith('http')) {
+          console.log(`Install package ${key} to ${packagePath} path ${gitPath}`)
+          childProcess.execFileSync(
+            CONFIG.getNpmBinPath(),
+            ['install', key, gitPath, '--global-style', '--loglevel=error'],
+            {env: process.env, cwd: packagePath, stdio:'inherit'}
+          )
+        } else {
+          console.log(`Install package ${key} to ${packagePath} version ${gitPath}`)
+          childProcess.execFileSync(
+            CONFIG.getNpmBinPath(),
+            ['install', `${key}@${gitPath}`, '--global-style', '--loglevel=error'],
+            {env: process.env, cwd: packagePath, stdio:'inherit'}
+          )
+        }
+      } catch (error) {
+        console.log(`Npm install ${key} failed, apm install again`)
 
-      console.log(`Install package ${packagePath}/${key}`)
-      childProcess.execFileSync(
-        CONFIG.getApmBinPath(),
-        ['--global-style', '--loglevel=error', 'install'],
-        {env: process.env, cwd: path.join(packagePath, 'node_modules', key), stdio:'inherit'}
-      )
+        childProcess.execFileSync(
+          CONFIG.getApmBinPath(),
+          ['install', `${key}@${gitPath}`, '--global-style', '--loglevel=error'],
+          {env: process.env, cwd: path.join(packagePath, 'node_modules', key), stdio:'inherit'}
+        )
+      }
     })
 
     console.log(`Copy attach package from ${path.join(CONFIG.repositoryRootPath, 'attach-package', 'node_modules')} to ${path.join(bundledResourcesPath, 'attach-package')}`)
