@@ -1,4 +1,9 @@
 # Welcome to Thera [中文版](https://github.com/alibaba/Thera/wiki/readme-cn)
+
+[![Build Status](https://travis-ci.org/alibaba/Thera.svg?branch=master)](https://travis-ci.org/alibaba/Thera)   
+
+  
+
 ![](https://img.alicdn.com/tps/TB1meI7OVXXXXXcXXXXXXXXXXXX-1024-460.png)
 
 Thera is a develop tool aiming to improve the developing experience of hybrid mobile app, which use weex, luaview, react native solition. It is built on top of Atom.  
