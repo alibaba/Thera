@@ -83,7 +83,7 @@ function installAttachPackages(packagedAppPath, bundledResourcesPath) {
           console.log(`Install package ${key} to ${packagePath} path ${gitPath}`)
           childProcess.execFileSync(
             CONFIG.getNpmBinPath(),
-            ['install', key, gitPath, '--global-style', '--loglevel=error'],
+            ['install', gitPath, '--global-style', '--loglevel=error'],
             {env: process.env, cwd: packagePath, stdio:'inherit'}
           )
         } else {
