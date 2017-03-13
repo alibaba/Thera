@@ -2,7 +2,7 @@
   "name": "thera",
   "productName": "Thera",
   "version": "1.12.5-dev",
-  "theraVersion": "0.4.12-beta.4",
+  "theraVersion": "0.4.12-beta.5",
   "description": "A Weex IDE",
   "main": "./src/main-process/main.js",
   "repository": {
@@ -188,7 +188,7 @@
   },
   "attach-package": {
     "file-icons": "git+https://github.com/file-icons/atom.git#v2.0.17",
-    "seti-ui": "git+https://github.com/TheraPackages/thera-seti-ui.git",
+    "seti-ui": "git+https://github.com/TheraPackages/thera-seti-ui.git#v1.3.3",
     "dumplings": "2.0.1",
     "symbols-tree-view": "git+https://github.com/TheraPackages/symbols-tree-view.git#v0.13.4",
     "linter-weex": "git+https://github.com/TheraPackages/linter-weex.git",

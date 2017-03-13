@@ -15,7 +15,7 @@
     "dumplings": "2.0.1",
     "linter": "git+https://github.com/TheraPackages/linter.git",
     "linter-weex": "git+https://github.com/TheraPackages/linter-weex.git",
-    "seti-ui": "git+https://github.com/TheraPackages/thera-seti-ui.git",
+    "seti-ui": "git+https://github.com/TheraPackages/thera-seti-ui.git#v1.3.3",
     "symbols-tree-view": "git+https://github.com/TheraPackages/symbols-tree-view.git",
     "autocomplete-weex": "git+https://github.com/TheraPackages/autocomplete-weex.git",
     "weex-run": "git+https://github.com/TheraPackages/weex-run.git"
