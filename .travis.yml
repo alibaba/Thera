@@ -9,5 +9,12 @@ install:
   - npm install
   - cd script && npm install && cd ..
 
+# init apm environment
+before_script:
+  - mkdir apm/node_modules && cd apm/node_modules
+  - git clone git@github.com:TheraPackages/apm.git atom-package-manager
+  - cd atom-package-manager && npm install
+  - cd ../../../
+
 script:
   script/build
