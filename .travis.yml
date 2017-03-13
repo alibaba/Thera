@@ -11,10 +11,25 @@ install:
 
 # init apm environment
 before_script:
-  - mkdir apm/node_modules && cd apm/node_modules
+  - [ -e apm/node_modules ] || (mkdir apm/node_modules && cd apm/node_modules)
   - git clone https://github.com/TheraPackages/apm.git atom-package-manager
   - cd atom-package-manager && npm install
   - cd ../../../
 
 script:
   script/build
+
+cache:
+  directories:
+    - electron
+    - node_modules
+    - apm/node_modules
+    - script/node_modules
+    - ~/.thera/compile-cache
+
+notifications:
+  email:
+    recipients:
+      - huc1011@gmail.com
+    on_success: always
+    on_failure: always
