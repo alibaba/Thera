@@ -1,0 +1,13 @@
+os:
+  - osx
+
+language: node_js
+node_js:
+  - "6.7.0"
+
+install:
+  - npm install
+  - cd script && npm install && cd ..
+
+script:
+  script/build

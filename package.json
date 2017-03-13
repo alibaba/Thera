@@ -69,7 +69,7 @@
     "thera-debugger": "git+https://github.com/TheraPackages/thera-debugger.git",
     "thera-mock": "git+https://github.com/TheraPackages/thera-mock.git",
     "tool-bar": "git+https://github.com/TheraPackages/tool-bar.git#v1.0.2",
-    "tool-bar-main": "git+https://github.com/TheraPackages/tool-bar-main.git#v0.1.0",
+    "tool-bar-main": "git+https://github.com/TheraPackages/tool-bar-main.git#v0.1.2",
     "typescript-simple": "1.0.0",
     "underscore-plus": "^1.6.6",
     "vue-template-compiler": "~2.1.8",
@@ -77,9 +77,11 @@
     "winreg": "^1.2.1",
     "yargs": "^3.23.0",
     "thera-background-tips": "git+https://github.com/TheraPackages/background-tips.git",
-	"thera-autocomplete-plus-plus": "git+https://github.com/TheraPackages/thera-autocomplete-plus-plus.git"
+	  "thera-autocomplete-plus-plus": "git+https://github.com/TheraPackages/thera-autocomplete-plus-plus.git",
+    "thera-left-bar": "git+https://github.com/TheraPackages/thera-left-bar.git#v0.2.1"
   },
   "packageDependencies": {
+    "thera-left-bar": "0.2.1",
     "language-we": "0.0.7",
     "atom-dark-syntax": "0.27.0",
     "atom-dark-ui": "0.52.0",
@@ -175,7 +177,7 @@
     "thera-debugger": "1.0.0",
     "thera-mock": "0.1.1",
     "tool-bar": "1.0.2",
-    "tool-bar-main": "0.1.0",
+    "tool-bar-main": "0.1.2",
     "we-syntax": "0.0.3",
     "thera-background-tips": "0.1.5"
   },
@@ -188,11 +190,12 @@
     "file-icons": "git+https://github.com/file-icons/atom.git#v2.0.17",
     "seti-ui": "git+ssh://git@gitlab.alibaba-inc.com:project-falcon/seti-ui.git",
     "dumplings": "2.0.1",
-    "symbols-tree-view": "git+https://github.com/TheraPackages/symbols-tree-view.git",
+    "symbols-tree-view": "git+https://github.com/TheraPackages/symbols-tree-view.git#v0.13.4",
     "linter-weex": "git+https://github.com/TheraPackages/linter-weex.git",
     "linter": "git+https://github.com/TheraPackages/linter.git",
     "autocomplete-weex": "git+https://github.com/TheraPackages/autocomplete-weex.git",
-    "weex-run": "git+https://github.com/TheraPackages/weex-run.git"
+    "weex-run": "git+https://github.com/TheraPackages/weex-run.git",
+    "atom-notifier": "git+https://github.com/TheraPackages/notifier.git#v0.5.2"
   },
   "standard": {
     "ignore": [],
