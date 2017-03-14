@@ -8,14 +8,10 @@ node_js:
 install:
   - npm install
   - cd script && npm install && cd ..
-
-# init apm environment
-before_script:
   - sh travis_before_script.sh
 
 script:
-  echo 'generate cache'
-  # script/build
+  script/build
 
 cache:
   directories:
