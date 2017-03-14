@@ -14,7 +14,8 @@ before_script:
   - sh travis_before_script.sh
 
 script:
-  script/build
+  echo 'generate cache'
+  # script/build
 
 cache:
   directories:

@@ -179,7 +179,7 @@
     "tool-bar": "1.0.2",
     "tool-bar-main": "0.1.2",
     "we-syntax": "0.0.3",
-    "thera-background-tips": "^0.1.6"
+    "thera-background-tips": "0.1.6"
   },
   "private": true,
   "scripts": {
