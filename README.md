@@ -94,4 +94,10 @@ Building from source is still under construction, you can check out [thera packa
 
 
 ## License
-[MIT](http://gitlab.alibaba-inc.com/project-falcon/Thera/blob/develop/LICENSE.md)
+[MIT](https://github.com/alibaba/Thera/blob/master/LICENSE.md)
+
+## F&Q
+[Portal](https://github.com/alibaba/Thera/wiki/F&Q)
+
+
+
