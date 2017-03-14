@@ -130,6 +130,12 @@ function copyAttachResources (packagedAppPath, bundledResourcesPath) {
       if (err) throw err
     }
   )
+
+  // copy package version infos
+  fromPath = path.join(CONFIG.repositoryRootPath, 'out', 'app', 'package.json')
+  toPath = path.join(bundledResourcesPath, 'attach-resources', 'package.json')
+  console.log(`Copying ${fromPath} to "${toPath}"`)
+  fs.copySync(fromPath, toPath)
 }
 
 function copyNonASARResources (packagedAppPath, bundledResourcesPath) {
