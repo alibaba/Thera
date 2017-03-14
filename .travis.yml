@@ -11,10 +11,7 @@ install:
 
 # init apm environment
 before_script:
-  - [ -e apm/node_modules ] || (mkdir apm/node_modules && cd apm/node_modules)
-  - git clone https://github.com/TheraPackages/apm.git atom-package-manager
-  - cd atom-package-manager && npm install
-  - cd ../../../
+  - sh travis_before_script.sh
 
 script:
   script/build
@@ -31,5 +28,6 @@ notifications:
   email:
     recipients:
       - huc1011@gmail.com
+      - hzdengxu@163.com
     on_success: always
     on_failure: always
