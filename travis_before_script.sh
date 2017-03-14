@@ -1,6 +1,6 @@
 set -e 
 
-if [ ! -e apm/node_modules ]; then
+if [ ! -e apm/node_modules/atom-package-manager ]; then
   echo 'initializing apm'
   mkdir apm/node_modules 
   cd apm/node_modules
