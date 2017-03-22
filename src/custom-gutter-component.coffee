@@ -86,7 +86,7 @@ class CustomGutterComponent
       node.classList.add(newDecorationInfo.class)
     else if not newDecorationInfo.class
       node.className = 'decoration'
-
+    
     @setDecorationItem(newDecorationInfo.item, newDecorationInfo.height, decorationId, node)
 
   # Sets the decorationItem on the decorationNode.
@@ -104,6 +104,6 @@ class CustomGutterComponent
         else
           newItemNode = newItem.element
 
-        newItemNode.style.height = decorationHeight + 'px'
+        # newItemNode.style.height = decorationHeight + 'px' # by dennis, it is no need to set height attribute now.
         decorationNode.appendChild(newItemNode)
         @decorationItemsById[decorationId] = newItem

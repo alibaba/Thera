@@ -36,6 +36,7 @@ class TextEditorComponent
   gutterComponent: null
   mounted: true
   initialized: false
+  lineTailManager: null
 
   Object.defineProperty @prototype, "domNode",
     get: -> @domNodeValue
@@ -44,6 +45,7 @@ class TextEditorComponent
       @domNodeValue = domNode
 
   constructor: ({@editor, @hostElement, @rootElement, @stylesElement, tileSize, @views, @themes, @assert}) ->
+    @lineTailManager = @editor.lineTailManager
     @tileSize = tileSize if tileSize?
     @disposables = new CompositeDisposable
 
@@ -78,7 +80,7 @@ class TextEditorComponent
     @hiddenInputComponent = new InputComponent
     @scrollViewNode.appendChild(@hiddenInputComponent.getDomNode())
 
-    @linesComponent = new LinesComponent({@presenter, @hostElement, @domElementPool, @assert, @grammars})
+    @linesComponent = new LinesComponent({@presenter, @hostElement, @domElementPool, @assert, @grammars, @lineTailManager})
     @scrollViewNode.appendChild(@linesComponent.getDomNode())
 
     if @blockDecorationsComponent?
@@ -129,11 +131,12 @@ class TextEditorComponent
     @domNode
 
   updateSync: ->
+    
     @updateSyncPreMeasurement()
 
     @oldState ?= {width: null}
     @newState = @presenter.getPostMeasurementState()
-
+    
     if @editor.getLastSelection()? and not @editor.getLastSelection().isEmpty()
       @domNode.classList.add('has-selection')
     else
@@ -143,7 +146,7 @@ class TextEditorComponent
       @domNode.classList.toggle('is-focused', @newState.focused)
 
     @performedInitialMeasurement = false if @editor.isDestroyed()
-
+    
     if @performedInitialMeasurement
       if @newState.height isnt @oldState.height
         if @newState.height?
@@ -164,7 +167,7 @@ class TextEditorComponent
     else
       @gutterContainerComponent?.getDomNode()?.remove()
       @gutterContainerComponent = null
-
+    
     @hiddenInputComponent.updateSync(@newState)
     @linesComponent.updateSync(@newState)
     @blockDecorationsComponent?.updateSync(@newState)

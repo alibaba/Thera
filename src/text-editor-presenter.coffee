@@ -59,7 +59,8 @@ class TextEditorPresenter
     @emitter.on 'did-update-state', callback
 
   emitDidUpdateState: ->
-    @emitter.emit "did-update-state" if @isBatching()
+    if @isBatching()
+      @emitter.emit "did-update-state"
 
   transferMeasurementsToModel: ->
     @model.setLineHeightInPixels(@lineHeight) if @lineHeight?
