@@ -45,7 +45,7 @@
     "language-we": "git+https://github.com/TheraPackages/language-we.git",
     "less-cache": "0.23",
     "line-top-index": "0.2.0",
-    "mainwindow": "git+https://github.com/TheraPackages/mainwindow.git",
+    "mainwindow": "git+https://github.com/TheraPackages/mainwindow.git#v0.1.0",
     "marked": "^0.3.6",
     "mocha": "2.5.1",
     "normalize-package-data": "^2.0.0",
@@ -81,6 +81,7 @@
     "thera-debug-frontend": "git+https://github.com/TheraPackages/thera-debug-frontend.git#v0.1.1"
   },
   "packageDependencies": {
+    "language-lua": "0.9.1",
     "thera-debug-frontend": "0.1.1",
     "thera-left-bar": "0.2.1",
     "language-we": "0.0.7",
@@ -174,7 +175,7 @@
     "chart-d3": "0.0.0",
     "console-panel": "0.2.4",
     "create-files": "0.0.0",
-    "mainwindow": "0.0.6",
+    "mainwindow": "0.1.0",
     "thera-debugger": "1.1.0",
     "tool-bar": "1.0.2",
     "tool-bar-main": "0.1.2",
@@ -194,7 +195,7 @@
     "linter-weex": "git+https://github.com/TheraPackages/linter-weex.git",
     "linter": "git+https://github.com/TheraPackages/linter.git",
     "autocomplete-weex": "git+https://github.com/TheraPackages/autocomplete-weex.git",
-    "weex-run": "git+https://github.com/TheraPackages/weex-run.git#v1.1.7",
+    "weex-run": "git+https://github.com/TheraPackages/weex-run.git#v1.1.8",
     "atom-notifier": "git+https://github.com/TheraPackages/notifier.git#v0.5.2"
   },
   "standard": {
