@@ -30,5 +30,6 @@ notifications:
       - huc1011@gmail.com
       - hzdengxu@163.com
       - 1032419360@qq.com
+      - dutlxq2014@163.com
     on_success: always
     on_failure: always
