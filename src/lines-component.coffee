@@ -21,7 +21,7 @@ module.exports =
 class LinesComponent extends TiledComponent
   placeholderTextDiv: null
 
-  constructor: ({@presenter, @domElementPool, @assert}) ->
+  constructor: ({@presenter, @domElementPool, @assert, @lineTailManager}) ->
     @domNode = document.createElement('div')
     @domNode.classList.add('lines')
     @tilesNode = document.createElement("div")
@@ -54,6 +54,7 @@ class LinesComponent extends TiledComponent
       @oldState.backgroundColor = @newState.backgroundColor
 
   afterUpdateSync: (state) ->
+    @lineTailManager.setChange false
     if @newState.placeholderText isnt @oldState.placeholderText
       @placeholderTextDiv?.remove()
       if @newState.placeholderText?
@@ -65,7 +66,7 @@ class LinesComponent extends TiledComponent
 
     @cursorsComponent.updateSync(state)
 
-  buildComponentForTile: (id) -> new LinesTileComponent({id, @presenter, @domElementPool, @assert})
+  buildComponentForTile: (id) -> new LinesTileComponent({id, @presenter, @domElementPool, @assert, @lineTailManager})
 
   buildEmptyState: ->
     {tiles: {}}

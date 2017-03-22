@@ -5,6 +5,7 @@ TextBuffer = require 'text-buffer'
 TextEditor = require './text-editor'
 TextEditorComponent = require './text-editor-component'
 StylesElement = require './styles-element'
+fs = require 'fs-plus'
 
 ShadowStyleSheet = null
 
@@ -51,6 +52,12 @@ class TextEditorElement extends HTMLElement
     @rootElement.classList.add('editor--private')
 
     @shadowRoot.appendChild(@stylesElement)
+
+    # 添加 fa
+    faStyle = document.createElement('style')
+    faStyle.textContent = fs.readFileSync (require.resolve '../static/font-awesome-4.7.0/css/font-awesome.min.css'), 'utf8'
+    @shadowRoot.appendChild(faStyle)
+
     @shadowRoot.appendChild(@rootElement)
 
   attachedCallback: ->

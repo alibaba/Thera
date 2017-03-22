@@ -6,6 +6,7 @@ Grim = require 'grim'
 {Point, Range} = TextBuffer = require 'text-buffer'
 LanguageMode = require './language-mode'
 DecorationManager = require './decoration-manager'
+LineTailManager = require './line-tail-manager'
 TokenizedBuffer = require './tokenized-buffer'
 Cursor = require './cursor'
 Model = require './model'
@@ -185,6 +186,8 @@ class TextEditor extends Model
     @defaultMarkerLayer = @displayLayer.addMarkerLayer()
     @selectionsMarkerLayer ?= @addMarkerLayer(maintainHistory: true, persistent: true)
 
+    @lineTailManager = new LineTailManager this
+
     @decorationManager = new DecorationManager(@displayLayer, @defaultMarkerLayer)
     @decorateMarkerLayer(@displayLayer.foldsMarkerLayer, {type: 'line-number', class: 'folded'})
 
@@ -329,6 +332,9 @@ class TextEditor extends Model
           if value isnt @autoWidth
             @autoWidth = value
             @presenter?.didChangeAutoWidth()
+        when 'lineTail'
+          @lineTailManager.setChange true
+          @presenter?.emitDidUpdateState()
         else
           throw new TypeError("Invalid TextEditor parameter: '#{param}'")
 
@@ -1726,6 +1732,19 @@ class TextEditor extends Model
   # Returns a {Decoration} object
   decorateMarker: (marker, decorationParams) ->
     @decorationManager.decorateMarker(marker, decorationParams)
+
+  # line: number 1, 2, 3, 4...
+  # lineTailParams: {content: 'xxxx', class: 'css-class'}
+  # Returns a Indicator
+  # message should container key member to identify itsself
+  lineTailIndicatorAdd: (message) ->
+    @lineTailManager.lineTailIndicatorAdd(message)
+
+  # line: number 1, 2, 3, 4...
+  # lineTailParams: {content: 'xxxx', class: 'css-class'}
+  # Returns a Indicator
+  lineTailIndicatorDelete: (message) ->
+    @lineTailManager.lineTailIndicatorDelete(message)
 
   # Essential: Add a decoration to every marker in the given marker layer. Can
   # be used to decorate a large number of markers without having to create and

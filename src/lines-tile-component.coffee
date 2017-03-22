@@ -13,7 +13,7 @@ cloneObject = (object) ->
 
 module.exports =
 class LinesTileComponent
-  constructor: ({@presenter, @id, @domElementPool, @assert}) ->
+  constructor: ({@presenter, @id, @domElementPool, @assert, @lineTailManager}) ->
     @measuredLines = new Set
     @lineNodesByLineId = {}
     @screenRowsByLineId = {}
@@ -94,6 +94,9 @@ class LinesTileComponent
 
     newLineIds = null
     newLineNodes = null
+    
+    if @lineTailManager.isChanged()
+      @removeLineNodes()
 
     for id, lineState of @newTileState.lines
       if @oldTileState.lines.hasOwnProperty(id)
@@ -233,6 +236,16 @@ class LinesTileComponent
       textNodes.push(textNode)
 
     @textNodesByLineId[id] = textNodes
+
+    bufferRow = @presenter.model.bufferRowForScreenRow(screenRow)
+    objText = @lineTailManager.getTextByLine bufferRow
+    if objText
+      {text, tipClass} = objText
+      tailNode = @domElementPool.buildElement 'span'
+      tailNode.textContent = text
+      tailNode.classList = tipClass
+      lineNode.appendChild tailNode
+
     lineNode
 
   updateLineNode: (id) ->
