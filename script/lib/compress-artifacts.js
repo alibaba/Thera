@@ -10,7 +10,7 @@ module.exports = function (packagedAppPath) {
   let appArchiveName
   let version = CONFIG.appMetadata.theraVersion
   if (process.platform === 'darwin') {
-    appArchiveName = `thera-mac-${version}.zip`
+    appArchiveName = `thera-mac.zip`
   } else if (process.platform === 'win32') {
     appArchiveName = 'thera-windows.zip'
   } else {
