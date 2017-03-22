@@ -8,6 +8,7 @@ const getLicenseText = require('./get-license-text')
 const path = require('path')
 const spawnSync = require('./spawn-sync')
 const mkdirp = require('mkdirp')
+const glob = require('glob')
 require('colors')
 
 const CONFIG = require('../config')
@@ -54,6 +55,8 @@ module.exports = function () {
 
     copyAttachResources(packagedAppPath, bundledResourcesPath)
 
+    copyResourceInPackage(packagedAppPath, bundledResourcesPath)
+
     return copyNonASARResources(packagedAppPath, bundledResourcesPath).then(() => {
       console.log(`Application bundle created at ${packagedAppPath}`)
       return packagedAppPath
@@ -61,7 +64,7 @@ module.exports = function () {
   })
 }
 
-function installAttachPackages(packagedAppPath, bundledResourcesPath) {
+function installAttachPackages (packagedAppPath, bundledResourcesPath) {
   console.log('install attaching packages')
 
   let packageConfig = JSON.parse(fs.readFileSync(path.join(CONFIG.repositoryRootPath, 'package.json')))
@@ -113,8 +116,33 @@ function installAttachPackages(packagedAppPath, bundledResourcesPath) {
       {recursive: true},
       (err) => {
         if (err) throw err
-    })
+      })
   }
+}
+
+function copyResourceInPackage (packagedAppPath, bundledResourcesPath) {
+  console.log('copyResourceInPackage')
+  glob.sync(path.join(CONFIG.repositoryRootPath, 'node_modules', '*', 'package.json'))
+    .map((packagePath) => {
+      return {
+        packagePath: packagePath,
+        obj: fs.readJsonSync(packagePath)
+      } })
+    .filter((info) => {
+      if (info.obj.attachResource) {
+        console.log(`find resource ${info.obj.attachResource}`)
+      }
+      return info.obj.attachResource !== undefined
+    })
+    .forEach((info) => {
+      let arr = info.packagePath.split(path.sep)
+      let dirName = arr[arr.length - 2]
+
+      let fromPath = path.join(path.dirname(info.packagePath), info.obj.attachResource)
+      let toPath = path.join(bundledResourcesPath, 'attach-resources', dirName, info.obj.attachResource)
+      console.log(`copy ${fromPath} to ${toPath}`)
+      fs.copySync(fromPath, toPath, {recursive: true})
+    })
 }
 
 function copyAttachResources (packagedAppPath, bundledResourcesPath) {
