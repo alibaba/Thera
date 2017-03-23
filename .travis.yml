@@ -23,7 +23,6 @@ notifications:
     - huc1011@gmail.com
     - hzdengxu@163.com
     - 1032419360@qq.com
-    on_success: always
     on_failure: always
 deploy:
   key:
