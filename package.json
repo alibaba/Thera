@@ -76,13 +76,13 @@
     "winreg": "^1.2.1",
     "yargs": "^3.23.0",
     "thera-background-tips": "git+https://github.com/TheraPackages/background-tips.git#v0.1.6",
-	"thera-autocomplete-plus-plus": "git+https://github.com/TheraPackages/thera-autocomplete-plus-plus.git#v0.0.5",
+    "thera-autocomplete-plus-plus": "git+https://github.com/TheraPackages/thera-autocomplete-plus-plus.git#v0.0.5",
     "thera-left-bar": "git+https://github.com/TheraPackages/thera-left-bar.git#v0.2.1",
     "thera-debug-frontend": "git+https://github.com/TheraPackages/thera-debug-frontend.git#v0.1.2",
-    "thera-luaview": "git+https://github.com/TheraPackages/thera-luaview.git#v0.0.1"
+    "thera-luaview": "git+https://github.com/TheraPackages/thera-luaview.git#v0.0.2"
   },
   "packageDependencies": {
-    "thera-luaview": "0.0.1",
+    "thera-luaview": "0.0.2",
     "language-lua": "0.9.1",
     "thera-debug-frontend": "0.1.2",
     "thera-left-bar": "0.2.1",
@@ -103,7 +103,7 @@
     "autocomplete-atom-api": "0.10.0",
     "autocomplete-css": "0.11.2",
     "autocomplete-html": "0.7.2",
-	"thera-autocomplete-plus-plus": "0.0.5",
+    "thera-autocomplete-plus-plus": "0.0.5",
     "autocomplete-snippets": "1.11.0",
     "autoflow": "0.27.0",
     "autosave": "0.23.1",
