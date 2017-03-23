@@ -13,7 +13,7 @@
   },
   "dependencies": {
     "dumplings": "2.0.1",
-    "linter": "git+https://github.com/TheraPackages/linter.git#v1.0.7",
+    "linter": "git+https://github.com/TheraPackages/linter.git#v1.0.8",
     "linter-weex": "git+https://github.com/TheraPackages/linter-weex.git",
     "seti-ui": "git+https://github.com/TheraPackages/thera-seti-ui.git#v1.3.3",
     "symbols-tree-view": "git+https://github.com/TheraPackages/symbols-tree-view.git",
