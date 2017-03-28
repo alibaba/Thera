@@ -82,6 +82,7 @@
     "thera-luaview": "git+https://github.com/TheraPackages/thera-luaview.git#v0.0.2"
   },
   "packageDependencies": {
+    "atom-beautify":"0.29.17",
     "thera-luaview": "0.0.2",
     "language-lua": "0.9.1",
     "thera-debug-frontend": "0.1.3",
