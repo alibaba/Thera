@@ -1,5 +1,5 @@
 git:
-  depth: 10
+  depth: 1
 os:
 - osx
 language: node_js

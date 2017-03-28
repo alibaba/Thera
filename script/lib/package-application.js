@@ -75,10 +75,16 @@ function installAttachPackages (packagedAppPath, bundledResourcesPath) {
 
       let gitPath = attachPackage[key]
       let packagePath = path.join(CONFIG.repositoryRootPath, 'attach-package')
-      let attachPackageDesp = fs.readJsonSync(path.join(packagePath, 'node_modules', key, 'package.json'))
-      let preVer = attachPackageDesp._from
 
-      if (fs.existsSync(path.join(packagePath, 'node_modules', key)) && gitPath === preVer) {
+      let attachPackageDesp
+      let preVer = 'do not exist'
+
+      if (fs.existsSync(path.join(packagePath, 'node_modules', key))) {
+        attachPackageDesp = fs.readJsonSync(path.join(packagePath, 'node_modules', key, 'package.json'))
+        preVer = attachPackageDesp._from
+      }
+
+      if (gitPath === preVer) {
         console.log(`skip package ${key} install, exist version ${preVer}`.gray)
         return
       }
