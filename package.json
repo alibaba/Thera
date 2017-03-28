@@ -192,7 +192,7 @@
   "attach-package": {
     "file-icons": "git+https://github.com/file-icons/atom.git#v2.0.17",
     "seti-ui": "git+https://github.com/TheraPackages/thera-seti-ui.git#v1.3.3",
-    "dumplings": "git+https://github.com/TheraPackages/dumplings.git#v2.0.3",
+    "dumplings": "git+https://github.com/TheraPackages/dumplings.git#v2.0.4",
     "symbols-tree-view": "git+https://github.com/TheraPackages/symbols-tree-view.git#v0.13.4",
     "linter-weex": "git+https://github.com/TheraPackages/linter-weex.git",
     "linter": "git+https://github.com/TheraPackages/linter.git#v1.0.8",
