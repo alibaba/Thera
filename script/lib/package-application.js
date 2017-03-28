@@ -71,19 +71,21 @@ function installAttachPackages (packagedAppPath, bundledResourcesPath) {
   const attachPackage = packageConfig['attach-package']
   if (attachPackage) {
     Object.keys(attachPackage).forEach((key) => {
-      if (!attachPackage.hasOwnProperty(key)) return;
+      if (!attachPackage.hasOwnProperty(key)) return
 
       let gitPath = attachPackage[key]
       let packagePath = path.join(CONFIG.repositoryRootPath, 'attach-package')
+      let attachPackageDesp = fs.readJsonSync(path.join(packagePath, 'node_modules', key, 'package.json'))
+      let preVer = attachPackageDesp._from
 
-      if (fs.existsSync(path.join(packagePath, 'node_modules', key))) {
-        console.log(`skip package ${key} install`.gray)
-        return;
+      if (fs.existsSync(path.join(packagePath, 'node_modules', key)) && gitPath === preVer) {
+        console.log(`skip package ${key} install, exist version ${preVer}`.gray)
+        return
       }
 
       try {
         if (gitPath.startsWith('git') || gitPath.startsWith('http')) {
-          console.log(`Install package ${key} to ${packagePath} path ${gitPath}`)
+          console.log(`Install package ${key} to ${packagePath} path ${gitPath}, previous version ${preVer}`)
           childProcess.execFileSync(
             CONFIG.getNpmBinPath(),
             ['install', gitPath, '--global-style', '--loglevel=error'],
