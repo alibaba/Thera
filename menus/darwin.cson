@@ -33,7 +33,7 @@
     label: 'File'
     submenu: [
       { label: 'New Window', command: 'application:new-window' }
-      { label: 'New File', command: 'application:new-file' }
+      { label: 'New File', command: 'create-files:toggle' }
       { label: 'Open…', command: 'application:open' }
       { label: 'Add Project Folder…', command: 'application:add-project-folder' }
       { label: 'Reopen Last Item', command: 'pane:reopen-closed-item' }
