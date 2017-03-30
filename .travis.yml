@@ -16,7 +16,7 @@ cache:
   - node_modules
   - apm/node_modules
   - script/node_modules
-  - attach-package/node_modules
+  - attach-package
   - ~/.thera/compile-cache
 notifications:
   email:
