@@ -131,7 +131,7 @@ function installAttachPackages (packagedAppPath, bundledResourcesPath) {
 function copyResourceInPackage (packagedAppPath, bundledResourcesPath) {
   console.log('copyResourceInPackage')
   findAndMoveResourceInPackage(path.join(CONFIG.repositoryRootPath, 'node_modules', '*', 'package.json'), bundledResourcesPath)
-  findAndMoveResourceInPackage(path.join(CONFIG.repositoryRootPath, 'attach-package', 'node_modules', '*', 'package.json'), bundledResourcesPath)
+  findAndMoveResourceInPackage(path.join(bundledResourcesPath, 'attach-package', '*', 'package.json'), bundledResourcesPath)
 }
 
 function findAndMoveResourceInPackage (searchPath, bundledResourcesPath) {
