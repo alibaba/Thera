@@ -1,5 +1,5 @@
 git:
-  depth: 10
+  depth: 1
 os:
 - osx
 language: node_js
@@ -16,6 +16,7 @@ cache:
   - node_modules
   - apm/node_modules
   - script/node_modules
+  - attach-package/node_modules
   - ~/.thera/compile-cache
 notifications:
   email:
@@ -23,13 +24,11 @@ notifications:
     - huc1011@gmail.com
     - hzdengxu@163.com
     - 1032419360@qq.com
-    on_success: always
     on_failure: always
 deploy:
-  key:
-    provider: bintray
-    file: out/thera-mac.zip
-    user: "nickolashu"
-    secure: mMRAVJJVIf0ShHdKlSzDDHd1Z4U+zK8o8wIUKub4oM6SjYSacPkn4KL0hK5Fi2W2pUssnxlEbYjw40vFQLXWp0fYWfgRdemqCMiDlHtTzBY8cXEd8LKkO4N9z19dwfHUZ7I6I0mMTZKoGPA52MewaduXEk1Hxp7sV7YN2Go/gFdoPWbm8H9ZvdUD6F2PomNyAKTihuqdTRHjDc3ZVtufaxfPEyXZ32nXgHEHcAuiY/nruw1K+7eMe7af2TyefRXw3KjzYyFIjrunbJXmZoNLJl4DJ8pY9TARSe/dKQVDC38s9+eCjugrkThmSRJRf4+OXA5meEHhOOjge1maLgnUcLlJF1chsnb0ANM9te4rbrLau7rd+KhcsT+8qqfzGQuxFjoRT6L0JwASt+E3SuCnYiUlJqmFsMuaY3MljEmfmwVvs/42qOk2gQEjhCewUgvcmb7D/OeeN7CbdyAAEmGHjyGfezVjC01HTHHYFMWndMrpfpgmxLNm4QyuASjvumFZc1H2qcKf4cfxF+8meboH9HscodoDxA1Qs3B9+daDWX7cSCOYAmnRK1d4+31/oMxA/IVV04cVt4bnt6N4UN0bUWN0gHFnaAmZocpFLarYfaBrEZAc5/1BDYAMbMfik2YhW0Ytlm6tCpav+MaipI8f7mba/g/tU5lqdWg/uSoqoPY=
-    on:
-      all_branches: true
+  provider: bintray
+  file: out/thera-mac.zip
+  user: "nickolashu"
+  key: mMRAVJJVIf0ShHdKlSzDDHd1Z4U+zK8o8wIUKub4oM6SjYSacPkn4KL0hK5Fi2W2pUssnxlEbYjw40vFQLXWp0fYWfgRdemqCMiDlHtTzBY8cXEd8LKkO4N9z19dwfHUZ7I6I0mMTZKoGPA52MewaduXEk1Hxp7sV7YN2Go/gFdoPWbm8H9ZvdUD6F2PomNyAKTihuqdTRHjDc3ZVtufaxfPEyXZ32nXgHEHcAuiY/nruw1K+7eMe7af2TyefRXw3KjzYyFIjrunbJXmZoNLJl4DJ8pY9TARSe/dKQVDC38s9+eCjugrkThmSRJRf4+OXA5meEHhOOjge1maLgnUcLlJF1chsnb0ANM9te4rbrLau7rd+KhcsT+8qqfzGQuxFjoRT6L0JwASt+E3SuCnYiUlJqmFsMuaY3MljEmfmwVvs/42qOk2gQEjhCewUgvcmb7D/OeeN7CbdyAAEmGHjyGfezVjC01HTHHYFMWndMrpfpgmxLNm4QyuASjvumFZc1H2qcKf4cfxF+8meboH9HscodoDxA1Qs3B9+daDWX7cSCOYAmnRK1d4+31/oMxA/IVV04cVt4bnt6N4UN0bUWN0gHFnaAmZocpFLarYfaBrEZAc5/1BDYAMbMfik2YhW0Ytlm6tCpav+MaipI8f7mba/g/tU5lqdWg/uSoqoPY=
+  on:
+    all_branches: true

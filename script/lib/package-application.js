@@ -71,19 +71,27 @@ function installAttachPackages (packagedAppPath, bundledResourcesPath) {
   const attachPackage = packageConfig['attach-package']
   if (attachPackage) {
     Object.keys(attachPackage).forEach((key) => {
-      if (!attachPackage.hasOwnProperty(key)) return;
+      if (!attachPackage.hasOwnProperty(key)) return
 
       let gitPath = attachPackage[key]
       let packagePath = path.join(CONFIG.repositoryRootPath, 'attach-package')
 
+      let attachPackageDesp
+      let preVer = 'do not exist'
+
       if (fs.existsSync(path.join(packagePath, 'node_modules', key))) {
-        console.log(`skip package ${key} install`.gray)
-        return;
+        attachPackageDesp = fs.readJsonSync(path.join(packagePath, 'node_modules', key, 'package.json'))
+        preVer = attachPackageDesp._from
+      }
+
+      if (gitPath === preVer) {
+        console.log(`skip package ${key} install, exist version ${preVer}`.gray)
+        return
       }
 
       try {
         if (gitPath.startsWith('git') || gitPath.startsWith('http')) {
-          console.log(`Install package ${key} to ${packagePath} path ${gitPath}`)
+          console.log(`Install package ${key} to ${packagePath} path ${gitPath}, previous version ${preVer}`)
           childProcess.execFileSync(
             CONFIG.getNpmBinPath(),
             ['install', gitPath, '--global-style', '--loglevel=error'],
@@ -122,27 +130,32 @@ function installAttachPackages (packagedAppPath, bundledResourcesPath) {
 
 function copyResourceInPackage (packagedAppPath, bundledResourcesPath) {
   console.log('copyResourceInPackage')
-  glob.sync(path.join(CONFIG.repositoryRootPath, 'node_modules', '*', 'package.json'))
-    .map((packagePath) => {
-      return {
-        packagePath: packagePath,
-        obj: fs.readJsonSync(packagePath)
-      } })
-    .filter((info) => {
-      if (info.obj.attachResource) {
-        console.log(`find resource ${info.obj.attachResource}`)
-      }
-      return info.obj.attachResource !== undefined
-    })
-    .forEach((info) => {
-      let arr = info.packagePath.split(path.sep)
-      let dirName = arr[arr.length - 2]
+  findAndCopyResourceInPackage(path.join(CONFIG.repositoryRootPath, 'node_modules', '*', 'package.json'), bundledResourcesPath)
+  findAndCopyResourceInPackage(path.join(CONFIG.repositoryRootPath, 'attach-package', 'node_modules', '*', 'package.json'), bundledResourcesPath)
+}
 
-      let fromPath = path.join(path.dirname(info.packagePath), info.obj.attachResource)
-      let toPath = path.join(bundledResourcesPath, 'attach-resources', dirName, info.obj.attachResource)
-      console.log(`copy ${fromPath} to ${toPath}`)
-      fs.copySync(fromPath, toPath, {recursive: true})
-    })
+function findAndCopyResourceInPackage (searchPath, bundledResourcesPath) {
+  glob.sync(searchPath)
+  .map((packagePath) => {
+    return {
+      packagePath: packagePath,
+      obj: fs.readJsonSync(packagePath)
+    } })
+  .filter((info) => {
+    if (info.obj.attachResource) {
+      console.log(`find resource ${info.obj.attachResource}`)
+    }
+    return info.obj.attachResource !== undefined
+  })
+  .forEach((info) => {
+    let arr = info.packagePath.split(path.sep)
+    let dirName = arr[arr.length - 2]
+
+    let fromPath = path.join(path.dirname(info.packagePath), info.obj.attachResource)
+    let toPath = path.join(bundledResourcesPath, 'attach-resources', dirName, info.obj.attachResource)
+    console.log(`copy ${fromPath} to ${toPath}`)
+    fs.copySync(fromPath, toPath, {recursive: true})
+  })
 }
 
 function copyAttachResources (packagedAppPath, bundledResourcesPath) {
@@ -250,8 +263,10 @@ function getIcon () {
 }
 
 function runPackager (options) {
+  let immediateID = setImmediate(() => console.log('packaging...'), 5 * 60 * 1000)
   return new Promise((resolve, reject) => {
     electronPackager(options, (err, packageOutputDirPaths) => {
+      clearImmediate(immediateID)
       if (err) {
         reject(err)
         throw new Error(err)
