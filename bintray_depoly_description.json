@@ -13,7 +13,7 @@
 	   In case the version already exists on Bintray, only the name fields is mandatory. */
 
 	"version": {
-		"name": "0.5"
+		"name": "0.1"
 	},
 
 	/* Configure the files you would like to upload to Bintray and their upload path.
