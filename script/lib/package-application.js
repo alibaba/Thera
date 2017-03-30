@@ -263,8 +263,10 @@ function getIcon () {
 }
 
 function runPackager (options) {
+  let immediateID = setImmediate(console.log('packaging...'), 5 * 60 * 1000)
   return new Promise((resolve, reject) => {
     electronPackager(options, (err, packageOutputDirPaths) => {
+      clearImmediate(immediateID)
       if (err) {
         reject(err)
         throw new Error(err)
