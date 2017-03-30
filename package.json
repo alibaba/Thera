@@ -198,7 +198,7 @@
     "linter": "git+https://github.com/TheraPackages/linter.git#v1.0.8",
     "autocomplete-weex": "git+https://github.com/TheraPackages/autocomplete-weex.git",
     "atom-notifier": "git+https://github.com/TheraPackages/notifier.git#v0.5.3",
-    "weex-run": "git+https://github.com/TheraPackages/weex-run.git#v1.1.14",
+    "weex-run": "git+https://github.com/TheraPackages/weex-run.git#v1.1.15",
     "atom-beautify": "git+https://github.com/TheraPackages/atom-beautify.git#v0.29.19"
   },
   "standard": {
