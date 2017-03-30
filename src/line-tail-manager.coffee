@@ -68,10 +68,9 @@ class LineTailManager
         return null if @isHide 
 
         if @lineTailsGroupByLines[line] and @lineTailsGroupByLines[line].length > 0
-            if line is 10
-                console.log @lineTailsGroupByLines[line]
-            if @findFirst line, @editor.getPath()
-                return {text: @lineTailsGroupByLines[line][0].text, tipClass: @lineTailsGroupByLines[line][0].tipClass}
+            item = @findFirst line, @editor.getPath()
+            if item
+                return {text: item.text, tipClass: item.tipClass}
             else
                 return null
         else
