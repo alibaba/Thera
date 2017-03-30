@@ -194,7 +194,7 @@
     "seti-ui": "git+https://github.com/TheraPackages/thera-seti-ui.git#v1.3.3",
     "dumplings": "git+https://github.com/TheraPackages/dumplings.git#v2.0.5",
     "symbols-tree-view": "git+https://github.com/TheraPackages/symbols-tree-view.git#v0.13.5",
-    "linter-weex": "git+https://github.com/TheraPackages/linter-weex.git",
+    "linter-weex": "git+https://github.com/TheraPackages/linter-weex.git#v0.0.8",
     "linter": "git+https://github.com/TheraPackages/linter.git#v1.0.8",
     "autocomplete-weex": "git+https://github.com/TheraPackages/autocomplete-weex.git",
     "atom-notifier": "git+https://github.com/TheraPackages/notifier.git#v0.5.3",
