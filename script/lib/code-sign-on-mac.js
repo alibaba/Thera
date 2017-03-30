@@ -8,7 +8,7 @@ const CONFIG = require('../config')
 // sign using local certificate
 // codesign -s '3rd Party Mac Developer Application: Zhejiang Taobao Mall Technology Co,Ltd. (EAA28CVMQM)' --deep --force Thera.app --verbose 
 module.exports = function (packagedAppPath) {
-  const keychain = '/Library/Keychains/System.keychain'
+  // const keychain = '/Library/Keychains/System.keychain'
 
   // Cause of permission issue, cannot add cer to keychain automaticaly.
   // Open certificate manually, if not exist in keychain

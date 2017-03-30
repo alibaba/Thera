@@ -4,9 +4,9 @@
 	   fields are mandatory. */
 
 	"package": {
-		"name": "Thera", // Bintray package name
-		"repo": "Thera", // Bintray repository name
-		"subject": "nickolashu" // Bintray subject (user or organization)
+		"name": "thera", // Bintray package name
+		"repo": "thera", // Bintray repository name
+		"subject": "nickolasomg" // Bintray subject (user or organization)
  	},
 
 	/* Package version information.
@@ -34,7 +34,7 @@
 
 	"files":
 		[
-		{"includePattern": "out\/(.*.zip)", "excludePattern": "out\/thera-mac-symbols.zip", "uploadPattern": "$1"}
+		{"includePattern": "out\/thera-mac.zip", "excludePattern": "out\/thera-mac-symbols.zip"}
 		],
 	"publish": true
 }
