@@ -130,11 +130,11 @@ function installAttachPackages (packagedAppPath, bundledResourcesPath) {
 
 function copyResourceInPackage (packagedAppPath, bundledResourcesPath) {
   console.log('copyResourceInPackage')
-  findAndCopyResourceInPackage(path.join(CONFIG.repositoryRootPath, 'node_modules', '*', 'package.json'), bundledResourcesPath)
-  findAndCopyResourceInPackage(path.join(CONFIG.repositoryRootPath, 'attach-package', 'node_modules', '*', 'package.json'), bundledResourcesPath)
+  findAndMoveResourceInPackage(path.join(CONFIG.repositoryRootPath, 'node_modules', '*', 'package.json'), bundledResourcesPath)
+  findAndMoveResourceInPackage(path.join(CONFIG.repositoryRootPath, 'attach-package', 'node_modules', '*', 'package.json'), bundledResourcesPath)
 }
 
-function findAndCopyResourceInPackage (searchPath, bundledResourcesPath) {
+function findAndMoveResourceInPackage (searchPath, bundledResourcesPath) {
   glob.sync(searchPath)
   .map((packagePath) => {
     return {
@@ -155,6 +155,8 @@ function findAndCopyResourceInPackage (searchPath, bundledResourcesPath) {
     let toPath = path.join(bundledResourcesPath, 'attach-resources', dirName, info.obj.attachResource)
     console.log(`copy ${fromPath} to ${toPath}`)
     fs.copySync(fromPath, toPath, {recursive: true})
+    console.log(`remove ${fromPath}`)
+    fs.removeSync(fromPath)
   })
 }
 

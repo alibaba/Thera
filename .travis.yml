@@ -25,10 +25,3 @@ notifications:
     - hzdengxu@163.com
     - 1032419360@qq.com
     on_failure: always
-deploy:
-  provider: bintray
-  file: bintray_depoly_description.json
-  user: nickolasomg
-  key: $BINTRAY_DEPLOY_KEY
-  on:
-    all_branches: true
