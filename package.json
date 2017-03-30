@@ -1,7 +1,7 @@
 {
   "name": "thera",
   "productName": "Thera",
-  "version": "1.12.6-dev",
+  "version": "1.13.1",
   "theraVersion": "0.4.12-beta.6",
   "description": "A Weex IDE",
   "main": "./src/main-process/main.js",
