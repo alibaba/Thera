@@ -1,8 +1,8 @@
 {
   "name": "thera",
   "productName": "Thera",
-  "version": "1.13.1",
-  "theraVersion": "0.4.12-beta.6",
+  "version": "1.12.6-dev",
+  "theraVersion": "0.4.13",
   "description": "A Weex IDE",
   "main": "./src/main-process/main.js",
   "repository": {
@@ -193,7 +193,7 @@
     "file-icons": "git+https://github.com/file-icons/atom.git#v2.0.17",
     "seti-ui": "git+https://github.com/TheraPackages/thera-seti-ui.git#v1.3.3",
     "dumplings": "git+https://github.com/TheraPackages/dumplings.git#v2.0.5",
-    "symbols-tree-view": "git+https://github.com/TheraPackages/symbols-tree-view.git#v0.13.6",
+    "symbols-tree-view": "git+https://github.com/TheraPackages/symbols-tree-view.git#v0.13.4",
     "linter-weex": "git+https://github.com/TheraPackages/linter-weex.git#v0.0.8",
     "linter": "git+https://github.com/TheraPackages/linter.git#v1.0.8",
     "autocomplete-weex": "git+https://github.com/TheraPackages/autocomplete-weex.git",
