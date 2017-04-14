@@ -44,7 +44,7 @@ class CommandInstaller
       if error?
         showErrorDialog(error)
       else
-        @installAtomCommand true, (error) =>
+        @installApmCommand true, (error) =>
           if error?
             showErrorDialog(error)
           else
@@ -62,12 +62,9 @@ class CommandInstaller
     @createSymlink commandPath, programName, askForPrivilege, callback
 
   installApmCommand: (askForPrivilege, callback) ->
-    programName = if @appVersion.includes("beta")
-      "tapm"
-    else
-      "tapm"
+    programName = "tapm"
 
-    commandPath = path.join(@getResourcesDirectory(), 'app', 'apm', 'node_modules', '.bin', 'apm')
+    commandPath = path.join(@getResourcesDirectory(), 'app', 'apm', 'bin', 'apm')
     # console.log("installing command path '#{commandPath}'")
     @createSymlink commandPath, programName, askForPrivilege, callback
 

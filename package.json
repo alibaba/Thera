@@ -192,9 +192,9 @@
   },
   "attach-package": {
     "file-icons": "git+https://github.com/file-icons/atom.git#v2.0.17",
-    "seti-ui": "git+https://github.com/TheraPackages/thera-seti-ui.git#v1.3.3",
+    "seti-ui": "git+https://github.com/TheraPackages/thera-seti-ui.git#v1.3.4",
     "dumplings": "git+https://github.com/TheraPackages/dumplings.git#v2.0.5",
-    "symbols-tree-view": "git+https://github.com/TheraPackages/symbols-tree-view.git#v0.13.4",
+    "symbols-tree-view": "git+https://github.com/TheraPackages/symbols-tree-view.git#v0.13.7",
     "linter-weex": "git+https://github.com/TheraPackages/linter-weex.git#v0.0.9",
     "linter": "git+https://github.com/TheraPackages/linter.git#v1.0.8",
     "autocomplete-weex": "git+https://github.com/TheraPackages/autocomplete-weex.git",
