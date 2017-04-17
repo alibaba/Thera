@@ -45,7 +45,7 @@
     "language-we": "git+https://github.com/TheraPackages/language-we.git",
     "less-cache": "0.23",
     "line-top-index": "0.2.0",
-    "mainwindow": "git+https://github.com/TheraPackages/mainwindow.git#v0.1.5",
+    "mainwindow": "git+https://github.com/TheraPackages/mainwindow.git#v0.1.6",
     "marked": "^0.3.6",
     "mocha": "2.5.1",
     "normalize-package-data": "^2.0.0",
@@ -178,7 +178,7 @@
     "chart-d3": "0.0.0",
     "console-panel": "0.2.9",
     "create-files": "0.0.1",
-    "mainwindow": "0.1.5",
+    "mainwindow": "0.1.6",
     "thera-debugger": "1.2.3",
     "tool-bar": "1.0.5",
     "tool-bar-main": "0.1.3",
@@ -199,7 +199,7 @@
     "linter": "git+https://github.com/TheraPackages/linter.git#v1.0.8",
     "autocomplete-weex": "git+https://github.com/TheraPackages/autocomplete-weex.git",
     "atom-notifier": "git+https://github.com/TheraPackages/notifier.git#v0.5.4",
-    "weex-run": "git+https://github.com/TheraPackages/weex-run.git#v1.1.17",
+    "weex-run": "git+https://github.com/TheraPackages/weex-run.git#v1.1.18",
     "atom-beautify": "git+https://github.com/TheraPackages/atom-beautify.git#v0.29.19"
   },
   "standard": {
