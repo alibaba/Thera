@@ -77,9 +77,11 @@ Download the latest [Thera release](https://github.com/alibaba/Thera/releases)
 #### Windows & Linux
 The new skyscraper is still under construction.
 
-## Building 
+## Building from source
 Building from source is still under construction, you can check out [thera packages](https://github.com/TheraPackages)
 
+## Contribution guide
+Please follow our [contribution guide](https://github.com/alibaba/Thera/wiki/contribution-guide)
  
 ## Restrictions
 * Vue 2.0 is not supported for now. 
