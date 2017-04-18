@@ -80,7 +80,7 @@
     "thera-left-bar": "git+https://github.com/TheraPackages/thera-left-bar.git#v0.2.1",
     "thera-debug-frontend": "git+https://github.com/TheraPackages/thera-debug-frontend.git#v0.2.3",
     "thera-luaview": "git+https://github.com/TheraPackages/thera-luaview.git#v0.0.21",
-    "tree-view": "git+https://github.com/TheraPackages/tree-view.git#v0.209.6"
+    "tree-view": "git+https://github.com/TheraPackages/tree-view.git#v0.209.8"
   },
   "packageDependencies": {
     "thera-luaview": "0.0.21",
@@ -138,7 +138,7 @@
     "symbols-view": "0.113.1",
     "tabs": "0.101.1",
     "timecop": "0.33.2",
-    "tree-view": "0.209.6",
+    "tree-view": "0.209.8",
     "update-package-dependencies": "0.10.0",
     "whitespace": "0.33.0",
     "wrap-guide": "0.38.2",
