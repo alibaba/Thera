@@ -85,7 +85,7 @@
   "packageDependencies": {
     "thera-luaview": "0.0.21",
     "language-lua": "0.9.1",
-    "thera-debug-frontend": "0.2.3",
+    "thera-debug-frontend": "0.2.4",
     "thera-left-bar": "0.2.1",
     "language-we": "0.0.7",
     "atom-dark-syntax": "0.27.0",
