@@ -78,14 +78,14 @@
     "thera-background-tips": "git+https://github.com/TheraPackages/background-tips.git#v0.1.7",
     "thera-autocomplete-plus-plus": "git+https://github.com/TheraPackages/thera-autocomplete-plus-plus.git#v0.0.9",
     "thera-left-bar": "git+https://github.com/TheraPackages/thera-left-bar.git#v0.2.1",
-    "thera-debug-frontend": "git+https://github.com/TheraPackages/thera-debug-frontend.git#v0.2.4",
+    "thera-debug-frontend": "git+https://github.com/TheraPackages/thera-debug-frontend.git#v0.2.5",
     "thera-luaview": "git+https://github.com/TheraPackages/thera-luaview.git#v0.0.21",
     "tree-view": "git+https://github.com/TheraPackages/tree-view.git#v0.209.8"
   },
   "packageDependencies": {
     "thera-luaview": "0.0.21",
     "language-lua": "0.9.1",
-    "thera-debug-frontend": "0.2.4",
+    "thera-debug-frontend": "0.2.5",
     "thera-left-bar": "0.2.1",
     "language-we": "0.0.7",
     "atom-dark-syntax": "0.27.0",
