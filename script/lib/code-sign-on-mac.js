@@ -20,6 +20,14 @@ module.exports = function (packagedAppPath) {
       '--deep', '--force', '--verbose',
       '--sign', '3rd Party Mac Developer Application: Zhejiang Taobao Mall Technology Co,Ltd. (EAA28CVMQM)', packagedAppPath
     ], {stdio: 'inherit'})
+
+    // double sign package, cause helper makes sign failed.
+    // TODO solve this issue later.
+    console.log(`Code-signing application at ${packagedAppPath} second time.`)
+    spawnSync('codesign', [
+      '--deep', '--force', '--verbose',
+      '--sign', '3rd Party Mac Developer Application: Zhejiang Taobao Mall Technology Co,Ltd. (EAA28CVMQM)', packagedAppPath
+    ], {stdio: 'inherit'})
   } catch (err) {
     throw err
   }
