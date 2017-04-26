@@ -28,6 +28,12 @@ module.exports = function (packagedAppPath) {
       '--deep', '--force', '--verbose',
       '--sign', '3rd Party Mac Developer Application: Zhejiang Taobao Mall Technology Co,Ltd. (EAA28CVMQM)', packagedAppPath
     ], {stdio: 'inherit'})
+
+    // check sign result
+    spawnSync('codesign', [
+      '-vv', packagedAppPath
+    ], {stdio: 'inherit'})
+
   } catch (err) {
     throw err
   }
