@@ -7,3 +7,4 @@ out
 docs
 electron
 .DS_Store
+settings.json
