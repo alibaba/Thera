@@ -1,15 +1,24 @@
+# sudo: required
 git:
   depth: 1
 os:
-- osx
+  - osx
 language: node_js
 node_js:
-- 6.7.0
+  - 6.7.0
+python:
+  - "2.7"
+before_install:
+  # pip already installed
+  # - curl -s https://bootstrap.pypa.io/get-pip.py | python 
+  - pip install -U oss2
+  # - python -V
+  # - pip -V
 install:
-- npm install
-- cd script && npm install && cd ..
-- sh travis_before_script.sh
-script: script/build --compress-artifacts
+  - npm install
+  - cd script && npm install && cd ..
+  - sh travis_before_script.sh
+script: script/build --compress-artifacts --deploy
 cache:
   directories:
   - electron
@@ -21,7 +30,15 @@ cache:
 notifications:
   email:
     recipients:
-    - huc1011@gmail.com
-    - hzdengxu@163.com
-    - 1032419360@qq.com
+      - huc1011@gmail.com
+      - hzdengxu@163.com
+      - 1032419360@qq.com
     on_failure: always
+# deploy to github on tags
+# deploy:
+#   provider: releases
+#   api_key: "GITHUB OAUTH TOKEN"
+#   file: "FILE TO UPLOAD"
+#   skip_cleanup: true
+#   on:
+#     tags: true
