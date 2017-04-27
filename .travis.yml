@@ -19,7 +19,7 @@ install:
   - cd script && npm install && cd ..
   - sh travis_before_script.sh
   - sh travis_install_code_sign.sh
-script: script/build --code-sign --compress-artifacts --deploy
+script: script/build --code-sign --compress-artifacts --deploy 
 cache:
   directories:
   - electron
@@ -28,13 +28,13 @@ cache:
   - script/node_modules
   - attach-package
   - ~/.thera/compile-cache
-notifications:
-  email:
-    recipients:
-      - huc1011@gmail.com
-      - hzdengxu@163.com
-      - 1032419360@qq.com
-    on_failure: always
+# notifications:
+#   email:
+#     recipients:
+#       - huc1011@gmail.com
+#       - hzdengxu@163.com
+#       - 1032419360@qq.com
+#     on_failure: always
 # deploy to github on tags
 # deploy:
 #   provider: releases
