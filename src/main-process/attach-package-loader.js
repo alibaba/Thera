@@ -16,11 +16,14 @@ module.exports = function () {
     (error, files) => {
       if (!error) {
         files.filter((name) => name!=="." && name!=='..').forEach((name) => {
-        child_process.execFile(
-          apmPath,
-          ['link'],
-          {cwd: path.join(attachPackage, name), stdio: 'inherit'}
-        )});
+          if (name !== 'dumplings') {
+            child_process.execFile(
+              apmPath,
+              ['link'],
+              {cwd: path.join(attachPackage, name), stdio: 'inherit'}
+            );
+          }
+        });
       } else {
         console.error(error);
       }

@@ -126,10 +126,6 @@ function installAttachPackages (packagedAppPath, bundledResourcesPath) {
       (err) => {
         if (err) throw err
       })
-
-    const fileToRemove = path.join(bundledResourcesPath, 'attach-package', 'node_modules', 'dumplings', 'package.json')
-    console.log(`remove ${fileToRemove}`)
-    fs.unlinkSync(fileToRemove)
   }
 }
 
