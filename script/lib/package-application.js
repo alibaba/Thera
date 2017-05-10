@@ -66,6 +66,7 @@ module.exports = function () {
 
 function installAttachPackages (packagedAppPath, bundledResourcesPath) {
   console.log('install attaching packages')
+  // const disablePackages = ['dumpling']
 
   let packageConfig = JSON.parse(fs.readFileSync(path.join(CONFIG.repositoryRootPath, 'package.json')))
   const attachPackage = packageConfig['attach-package']
@@ -125,6 +126,10 @@ function installAttachPackages (packagedAppPath, bundledResourcesPath) {
       (err) => {
         if (err) throw err
       })
+
+    const fileToRemove = path.join(bundledResourcesPath, 'attach-package', 'node_modules', 'dumplings', 'package.json')
+    console.log(`remove ${fileToRemove}`)
+    fs.unlinkSync(fileToRemove)
   }
 }
 

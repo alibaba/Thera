@@ -24,7 +24,7 @@ module.exports =
         description: 'Follow symbolic links when searching files and when opening files with the fuzzy finder.'
       disabledPackages:
         type: 'array'
-        default: ['dumplings']
+        default: []
         items:
           type: 'string'
         description: 'List of names of installed packages which are not loaded at startup.'
