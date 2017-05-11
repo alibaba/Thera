@@ -68,7 +68,7 @@
     "text-buffer": "9.3.0",
     "thera-debugger": "git+https://github.com/TheraPackages/thera-debugger.git#v1.2.8",
     "tool-bar": "git+https://github.com/TheraPackages/tool-bar.git#v1.0.8",
-    "tool-bar-main": "git+https://github.com/TheraPackages/tool-bar-main.git#v0.1.5",
+    "tool-bar-main": "git+https://github.com/TheraPackages/tool-bar-main.git#v0.1.6",
     "typescript-simple": "1.0.0",
     "underscore-plus": "^1.6.6",
     "vue-template-compiler": "~2.1.8",
@@ -181,7 +181,7 @@
     "mainwindow": "0.1.7",
     "thera-debugger": "1.2.8",
     "tool-bar": "1.0.8",
-    "tool-bar-main": "0.1.5",
+    "tool-bar-main": "0.1.6",
     "we-syntax": "0.0.3",
     "thera-background-tips": "0.1.7"
   },
