@@ -1,13 +1,7 @@
+Grim = require 'grim'
 {Emitter, CompositeDisposable} = require 'event-kit'
-Path = require 'path'
-{defaults} = require 'underscore-plus'
 TextBuffer = require 'text-buffer'
-TextEditor = require './text-editor'
 TextEditorComponent = require './text-editor-component'
-StylesElement = require './styles-element'
-fs = require 'fs-plus'
-
-ShadowStyleSheet = null
 
 class TextEditorElement extends HTMLElement
   model: null
@@ -18,6 +12,7 @@ class TextEditorElement extends HTMLElement
   focusOnAttach: false
   hasTiledRendering: true
   logicalDisplayBuffer: true
+  lightDOM: true
 
   createdCallback: ->
     # Use globals when the following instance variables aren't set.
@@ -30,35 +25,34 @@ class TextEditorElement extends HTMLElement
     @emitter = new Emitter
     @subscriptions = new CompositeDisposable
 
+    @hiddenInputElement = document.createElement('input')
+    @hiddenInputElement.classList.add('hidden-input')
+    @hiddenInputElement.setAttribute('tabindex', -1)
+    @hiddenInputElement.setAttribute('data-react-skip-selection-restoration', true)
+    @hiddenInputElement.style['-webkit-transform'] = 'translateZ(0)'
+    @hiddenInputElement.addEventListener 'paste', (event) -> event.preventDefault()
+
     @addEventListener 'focus', @focused.bind(this)
     @addEventListener 'blur', @blurred.bind(this)
+    @hiddenInputElement.addEventListener 'focus', @focused.bind(this)
+    @hiddenInputElement.addEventListener 'blur', @inputNodeBlurred.bind(this)
 
     @classList.add('editor')
     @setAttribute('tabindex', -1)
 
   initializeContent: (attributes) ->
-    unless ShadowStyleSheet?
-      ShadowStyleSheet = document.createElement('style')
-      ShadowStyleSheet.textContent = @themes.loadLessStylesheet(require.resolve('../static/text-editor-shadow.less'))
-
-    @createShadowRoot()
-
-    @shadowRoot.appendChild(ShadowStyleSheet.cloneNode(true))
-    @stylesElement = new StylesElement
-    @stylesElement.initialize(@styles)
-    @stylesElement.setAttribute('context', 'atom-text-editor')
-
+    Object.defineProperty(this, 'shadowRoot', {
+      get: =>
+        Grim.deprecate("""
+        The contents of `atom-text-editor` elements are no longer encapsulated
+        within a shadow DOM boundary. Please, stop using `shadowRoot` and access
+        the editor contents directly instead.
+        """)
+        this
+    })
     @rootElement = document.createElement('div')
     @rootElement.classList.add('editor--private')
-
-    @shadowRoot.appendChild(@stylesElement)
-
-    # 添加 fa
-    faStyle = document.createElement('style')
-    faStyle.textContent = fs.readFileSync (require.resolve '../static/font-awesome-4.7.0/css/font-awesome.min.css'), 'utf8'
-    @shadowRoot.appendChild(faStyle)
-
-    @shadowRoot.appendChild(@rootElement)
+    @appendChild(@rootElement)
 
   attachedCallback: ->
     @buildModel() unless @getModel()?
@@ -66,7 +60,7 @@ class TextEditorElement extends HTMLElement
     @mountComponent() unless @component?
     @listenForComponentEvents()
     @component.checkForVisibilityChange()
-    if this is document.activeElement
+    if @hasFocus()
       @focused()
     @emitter.emit("did-attach")
 
@@ -114,7 +108,10 @@ class TextEditorElement extends HTMLElement
 
   buildModel: ->
     @setModel(@workspace.buildTextEditor(
-      buffer: new TextBuffer(@textContent)
+      buffer: new TextBuffer({
+        text: @textContent
+        shouldDestroyOnFileDelete:
+          -> atom.config.get('core.closeDeletedFileTabs')})
       softWrapped: false
       tabLength: 2
       softTabs: true
@@ -126,18 +123,16 @@ class TextEditorElement extends HTMLElement
   mountComponent: ->
     @component = new TextEditorComponent(
       hostElement: this
-      rootElement: @rootElement
-      stylesElement: @stylesElement
       editor: @model
       tileSize: @tileSize
       views: @views
       themes: @themes
+      styles: @styles
       workspace: @workspace
-      assert: @assert
+      assert: @assert,
+      hiddenInputElement: @hiddenInputElement
     )
     @rootElement.appendChild(@component.getDomNode())
-
-    @shadowRoot.addEventListener('blur', @shadowRootBlurred.bind(this), true)
 
   unmountComponent: ->
     if @component?
@@ -145,21 +140,19 @@ class TextEditorElement extends HTMLElement
       @component.getDomNode().remove()
       @component = null
 
-  focused: ->
+  focused: (event) ->
     @component?.focused()
+    @hiddenInputElement.focus()
 
   blurred: (event) ->
+    if event.relatedTarget is @hiddenInputElement
+      event.stopImmediatePropagation()
+      return
     @component?.blurred()
 
-  # Work around what seems to be a bug in Chromium. Focus can be stolen from the
-  # hidden input when clicking on the gutter and transferred to the
-  # already-focused host element. The host element never gets a 'focus' event
-  # however, which leaves us in a limbo state where the text editor element is
-  # focused but the hidden input isn't focused. This always refocuses the hidden
-  # input if a blur event occurs in the shadow DOM that is transferring focus
-  # back to the host element.
-  shadowRootBlurred: (event) ->
-    @component.focused() if event.relatedTarget is this
+  inputNodeBlurred: (event) ->
+    if event.relatedTarget isnt this
+      @dispatchEvent(new FocusEvent('blur', relatedTarget: event.relatedTarget, bubbles: false))
 
   addGrammarScopeAttribute: ->
     @dataset.grammar = @model.getGrammar()?.scopeName?.replace(/\./g, ' ')

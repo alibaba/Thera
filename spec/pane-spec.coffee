@@ -2,7 +2,6 @@
 {Emitter} = require 'event-kit'
 Grim = require 'grim'
 Pane = require '../src/pane'
-PaneAxis = require '../src/pane-axis'
 PaneContainer = require '../src/pane-container'
 
 describe "Pane", ->
@@ -15,12 +14,14 @@ describe "Pane", ->
     getURI: -> @uri
     getPath: -> @path
     serialize: -> {deserializer: 'Item', @name, @uri}
+    copy: -> new Item(@name, @uri)
     isEqual: (other) -> @name is other?.name
     onDidDestroy: (fn) -> @emitter.on('did-destroy', fn)
     destroy: -> @destroyed = true; @emitter.emit('did-destroy')
     isDestroyed: -> @destroyed
     onDidTerminatePendingState: (callback) -> @emitter.on 'terminate-pending-state', callback
     terminatePendingState: -> @emitter.emit 'terminate-pending-state'
+    isPermanentDockItem: -> false
 
   beforeEach ->
     confirm = spyOn(atom.applicationDelegate, 'confirm')
@@ -52,7 +53,10 @@ describe "Pane", ->
     [container, pane1, pane2] = []
 
     beforeEach ->
-      container = new PaneContainer(config: atom.config, applicationDelegate: atom.applicationDelegate)
+      container = new PaneContainer
+        location: 'center'
+        config: atom.config
+        applicationDelegate: atom.applicationDelegate
       container.getActivePane().splitRight()
       [pane1, pane2] = container.getPanes()
 
@@ -493,6 +497,14 @@ describe "Pane", ->
           expect(item1 in pane.getItems()).toBe true
           expect(item1.isDestroyed()).toBe false
 
+      describe "when force=true", ->
+        it "destroys the item immediately", ->
+          pane.destroyItem(item1, true)
+
+          expect(item1.save).not.toHaveBeenCalled()
+          expect(item1 in pane.getItems()).toBe false
+          expect(item1.isDestroyed()).toBe true
+
     describe "when the last item is destroyed", ->
       describe "when the 'core.destroyEmptyPanes' config option is false (the default)", ->
         it "does not destroy the pane, but leaves it in place with empty items", ->
@@ -508,6 +520,19 @@ describe "Pane", ->
           atom.config.set('core.destroyEmptyPanes', true)
           pane.destroyItem(item) for item in pane.getItems()
           expect(pane.isDestroyed()).toBe true
+
+    describe "when passed a permanent dock item", ->
+      it "doesn't destroy the item", ->
+        spyOn(item1, 'isPermanentDockItem').andReturn true
+        pane.destroyItem(item1)
+        expect(item1 in pane.getItems()).toBe true
+        expect(item1.isDestroyed()).toBe false
+
+      it "destroy the item if force=true", ->
+        spyOn(item1, 'isPermanentDockItem').andReturn true
+        pane.destroyItem(item1, true)
+        expect(item1 in pane.getItems()).toBe false
+        expect(item1.isDestroyed()).toBe true
 
   describe "::destroyActiveItem()", ->
     it "destroys the active item", ->
@@ -789,6 +814,11 @@ describe "Pane", ->
         it "duplicates the active item", ->
           pane2 = pane1.splitLeft(copyActiveItem: true)
           expect(pane2.getActiveItem()).toEqual pane1.getActiveItem()
+
+        it "does nothing if the active item doesn't implement .copy()", ->
+          item1.copy = null
+          pane2 = pane1.splitLeft(copyActiveItem: true)
+          expect(pane2.getActiveItem()).toBeUndefined()
 
       describe "when the parent is a column", ->
         it "replaces itself with a row and inserts a new pane to the left of itself", ->
@@ -1081,6 +1111,7 @@ describe "Pane", ->
       expect(eventCount).toBe 1
 
     it "only calls terminate handler once when text is modified twice", ->
+      originalText = editor1.getText()
       editor1.insertText('Some text')
       advanceClock(editor1.getBuffer().stoppedChangingDelay)
 
@@ -1091,6 +1122,10 @@ describe "Pane", ->
 
       expect(pane.getPendingItem()).toBeNull()
       expect(eventCount).toBe 1
+
+      # Reset fixture back to original state
+      editor1.setText(originalText)
+      editor1.save()
 
     it "only calls clearPendingItem if there is a pending item to clear", ->
       spyOn(pane, "clearPendingItem").andCallThrough()

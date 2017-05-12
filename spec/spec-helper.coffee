@@ -49,7 +49,7 @@ if process.env.CI
 else
   jasmine.getEnv().defaultTimeoutInterval = 5000
 
-{resourcePath, testPaths} = atom.getLoadSettings()
+{testPaths} = atom.getLoadSettings()
 
 if specPackagePath = FindParentDir.sync(testPaths[0], 'package.json')
   packageMetadata = require(path.join(specPackagePath, 'package.json'))
@@ -61,8 +61,6 @@ else
   specProjectPath = path.join(__dirname, 'fixtures')
 
 beforeEach ->
-  documentTitle = null
-
   atom.project.setPaths([specProjectPath])
 
   window.resetTimeouts()
@@ -107,10 +105,10 @@ beforeEach ->
   addCustomMatchers(this)
 
 afterEach ->
+  ensureNoDeprecatedFunctionCalls()
+  ensureNoDeprecatedStylesheets()
   atom.reset()
-
   document.getElementById('jasmine-content').innerHTML = '' unless window.debugContent
-
   warnIfLeakingPathSubscriptions()
   waits(0) # yield to ui thread to make screen update more frequently
 
@@ -120,8 +118,9 @@ warnIfLeakingPathSubscriptions = ->
     console.error("WARNING: Leaking subscriptions for paths: " + watchedPaths.join(", "))
   pathwatcher.closeAllWatchers()
 
-ensureNoDeprecatedFunctionsCalled = ->
-  deprecations = Grim.getDeprecations()
+ensureNoDeprecatedFunctionCalls = ->
+  deprecations = _.clone(Grim.getDeprecations())
+  Grim.clearDeprecations()
   if deprecations.length > 0
     originalPrepareStackTrace = Error.prepareStackTrace
     Error.prepareStackTrace = (error, stack) ->
@@ -138,8 +137,18 @@ ensureNoDeprecatedFunctionsCalled = ->
     error = new Error("Deprecated function(s) #{deprecations.map(({originName}) -> originName).join ', '}) were called.")
     error.stack
     Error.prepareStackTrace = originalPrepareStackTrace
-
     throw error
+
+ensureNoDeprecatedStylesheets = ->
+  deprecations = _.clone(atom.styles.getDeprecations())
+  atom.styles.clearDeprecations()
+  for sourcePath, deprecation of deprecations
+    title =
+      if sourcePath isnt 'undefined'
+        "Deprecated stylesheet at '#{sourcePath}':"
+      else
+        "Deprecated stylesheet:"
+    throw new Error("#{title}\n#{deprecation.message}")
 
 emitObject = jasmine.StringPrettyPrinter.prototype.emitObject
 jasmine.StringPrettyPrinter.prototype.emitObject = (obj) ->
@@ -156,12 +165,15 @@ jasmine.attachToDOM = (element) ->
   jasmineContent = document.querySelector('#jasmine-content')
   jasmineContent.appendChild(element) unless jasmineContent.contains(element)
 
-deprecationsSnapshot = null
+grimDeprecationsSnapshot = null
+stylesDeprecationsSnapshot = null
 jasmine.snapshotDeprecations = ->
-  deprecationsSnapshot = _.clone(Grim.deprecations)
+  grimDeprecationsSnapshot = _.clone(Grim.deprecations)
+  stylesDeprecationsSnapshot = _.clone(atom.styles.deprecationsBySourcePath)
 
 jasmine.restoreDeprecationsSnapshot = ->
-  Grim.deprecations = deprecationsSnapshot
+  Grim.deprecations = grimDeprecationsSnapshot
+  atom.styles.deprecationsBySourcePath = stylesDeprecationsSnapshot
 
 jasmine.useRealClock = ->
   jasmine.unspy(window, 'setTimeout')

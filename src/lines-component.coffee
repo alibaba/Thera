@@ -2,26 +2,24 @@ CursorsComponent = require './cursors-component'
 LinesTileComponent = require './lines-tile-component'
 TiledComponent = require './tiled-component'
 
-DummyLineNode = document.createElement('div')
-DummyLineNode.className = 'line'
-DummyLineNode.style.position = 'absolute'
-DummyLineNode.style.visibility = 'hidden'
-DummyLineNode.appendChild(document.createElement('span'))
-DummyLineNode.appendChild(document.createElement('span'))
-DummyLineNode.appendChild(document.createElement('span'))
-DummyLineNode.appendChild(document.createElement('span'))
-DummyLineNode.children[0].textContent = 'x'
-DummyLineNode.children[1].textContent = '我'
-DummyLineNode.children[2].textContent = 'ﾊ'
-DummyLineNode.children[3].textContent = '세'
-
-RangeForMeasurement = document.createRange()
-
 module.exports =
 class LinesComponent extends TiledComponent
   placeholderTextDiv: null
 
-  constructor: ({@presenter, @domElementPool, @assert, @lineTailManager}) ->
+  constructor: ({@views, @presenter, @domElementPool, @assert}) ->
+    @DummyLineNode = document.createElement('div')
+    @DummyLineNode.className = 'line'
+    @DummyLineNode.style.position = 'absolute'
+    @DummyLineNode.style.visibility = 'hidden'
+    @DummyLineNode.appendChild(document.createElement('span'))
+    @DummyLineNode.appendChild(document.createElement('span'))
+    @DummyLineNode.appendChild(document.createElement('span'))
+    @DummyLineNode.appendChild(document.createElement('span'))
+    @DummyLineNode.children[0].textContent = 'x'
+    @DummyLineNode.children[1].textContent = '我'
+    @DummyLineNode.children[2].textContent = 'ﾊ'
+    @DummyLineNode.children[3].textContent = '세'
+
     @domNode = document.createElement('div')
     @domNode.classList.add('lines')
     @tilesNode = document.createElement("div")
@@ -33,10 +31,6 @@ class LinesComponent extends TiledComponent
 
     @cursorsComponent = new CursorsComponent
     @domNode.appendChild(@cursorsComponent.getDomNode())
-
-    insertionPoint = document.createElement('content')
-    insertionPoint.setAttribute('select', '.overlayer')
-    @domNode.appendChild(insertionPoint)
 
   getDomNode: ->
     @domNode
@@ -54,7 +48,6 @@ class LinesComponent extends TiledComponent
       @oldState.backgroundColor = @newState.backgroundColor
 
   afterUpdateSync: (state) ->
-    @lineTailManager.setChange false
     if @newState.placeholderText isnt @oldState.placeholderText
       @placeholderTextDiv?.remove()
       if @newState.placeholderText?
@@ -64,9 +57,17 @@ class LinesComponent extends TiledComponent
         @domNode.appendChild(@placeholderTextDiv)
       @oldState.placeholderText = @newState.placeholderText
 
+    # Removing and updating block decorations needs to be done in two different
+    # steps, so that the same decoration node can be moved from one tile to
+    # another in the same animation frame.
+    for component in @getComponents()
+      component.removeDeletedBlockDecorations()
+    for component in @getComponents()
+      component.updateBlockDecorations()
+
     @cursorsComponent.updateSync(state)
 
-  buildComponentForTile: (id) -> new LinesTileComponent({id, @presenter, @domElementPool, @assert, @lineTailManager})
+  buildComponentForTile: (id) -> new LinesTileComponent({id, @presenter, @domElementPool, @assert, @views})
 
   buildEmptyState: ->
     {tiles: {}}
@@ -77,19 +78,23 @@ class LinesComponent extends TiledComponent
   getTilesNode: -> @tilesNode
 
   measureLineHeightAndDefaultCharWidth: ->
-    @domNode.appendChild(DummyLineNode)
-    textNode = DummyLineNode.firstChild.childNodes[0]
+    @domNode.appendChild(@DummyLineNode)
 
-    lineHeightInPixels = DummyLineNode.getBoundingClientRect().height
-    defaultCharWidth = DummyLineNode.children[0].getBoundingClientRect().width
-    doubleWidthCharWidth = DummyLineNode.children[1].getBoundingClientRect().width
-    halfWidthCharWidth = DummyLineNode.children[2].getBoundingClientRect().width
-    koreanCharWidth = DummyLineNode.children[3].getBoundingClientRect().width
+    lineHeightInPixels = @DummyLineNode.getBoundingClientRect().height
+    defaultCharWidth = @DummyLineNode.children[0].getBoundingClientRect().width
+    doubleWidthCharWidth = @DummyLineNode.children[1].getBoundingClientRect().width
+    halfWidthCharWidth = @DummyLineNode.children[2].getBoundingClientRect().width
+    koreanCharWidth = @DummyLineNode.children[3].getBoundingClientRect().width
 
-    @domNode.removeChild(DummyLineNode)
+    @domNode.removeChild(@DummyLineNode)
 
     @presenter.setLineHeight(lineHeightInPixels)
     @presenter.setBaseCharacterWidth(defaultCharWidth, doubleWidthCharWidth, halfWidthCharWidth, koreanCharWidth)
+
+  measureBlockDecorations: ->
+    for component in @getComponents()
+      component.measureBlockDecorations()
+    return
 
   lineIdForScreenRow: (screenRow) ->
     tile = @presenter.tileForRow(screenRow)

@@ -10,7 +10,8 @@ require('./bootstrap')
 require('coffee-script/register')
 require('colors')
 
-const argv = require('yargs')
+const yargs = require('yargs')
+const argv = yargs
   .usage('Usage: $0 [options]')
   .help('help')
   .describe('code-sign',  'Code-sign executables (macOS and Windows only)')
@@ -20,20 +21,24 @@ const argv = require('yargs')
   .describe('compress-artifacts', 'Compress Thera binaries (and symbols on macOS)')
   .describe('install', 'Install Thera')
   .describe('deploy', 'deploy Thera to oss')
+  .string('install')
+  .wrap(yargs.terminalWidth())
   .argv
 
+const checkChromedriverVersion = require('./lib/check-chromedriver-version')
 const cleanOutputDirectory = require('./lib/clean-output-directory')
 const codeSignOnMac = require('./lib/code-sign-on-mac')
+const codeSignOnWindows = require('./lib/code-sign-on-windows')
 const compressArtifacts = require('./lib/compress-artifacts')
 const copyAssets = require('./lib/copy-assets')
 const createDebianPackage = require('./lib/create-debian-package')
 const createRpmPackage = require('./lib/create-rpm-package')
 const createWindowsInstaller = require('./lib/create-windows-installer')
-const downloadChromedriver = require('./lib/download-chromedriver')
 const dumpSymbols = require('./lib/dump-symbols')
 const generateAPIDocs = require('./lib/generate-api-docs')
 const generateMetadata = require('./lib/generate-metadata')
 const generateModuleCache = require('./lib/generate-module-cache')
+const generateStartupSnapshot = require('./lib/generate-startup-snapshot')
 const installApplication = require('./lib/install-application')
 const packageApplication = require('./lib/package-application')
 const prebuildLessCache = require('./lib/prebuild-less-cache')
@@ -42,14 +47,17 @@ const transpileCoffeeScriptPaths = require('./lib/transpile-coffee-script-paths'
 const transpileCsonPaths = require('./lib/transpile-cson-paths')
 const transpilePegJsPaths = require('./lib/transpile-peg-js-paths')
 const deployToOSS = require('./lib/deploy-to-oss')
+const transpilePackagesWithCustomTranspilerPaths = require('./lib/transpile-packages-with-custom-transpiler-paths.js')
 
 process.on('unhandledRejection', function (e) {
   console.error(e.stack || e)
   process.exit(1)
 })
 
+checkChromedriverVersion()
 cleanOutputDirectory()
 copyAssets()
+transpilePackagesWithCustomTranspilerPaths()
 transpileBabelPaths()
 transpileCoffeeScriptPaths()
 transpileCsonPaths()
@@ -58,9 +66,9 @@ generateModuleCache()
 prebuildLessCache()
 generateMetadata()
 generateAPIDocs()
-downloadChromedriver()
 dumpSymbols()
   .then(packageApplication)
+  .then(packagedAppPath => generateStartupSnapshot(packagedAppPath).then(() => packagedAppPath))
   .then(packagedAppPath => {
     if (process.platform === 'darwin') {
       if (argv.codeSign) {
@@ -73,7 +81,12 @@ dumpSymbols()
         return createWindowsInstaller(packagedAppPath, argv.codeSign).then(() => packagedAppPath)
       }
       else {
-        console.log('Skipping creating installer. Specify the --create-windows-installer option to create a Squirrel-based Windows installer. Code-signing was skipped too.'.gray)
+        console.log('Skipping creating installer. Specify the --create-windows-installer option to create a Squirrel-based Windows installer.'.gray)
+        if (argv.codeSign) {
+          codeSignOnWindows(packagedAppPath)
+        } else {
+          console.log('Skipping code-signing. Specify the --code-sign option to perform code-signing'.gray)
+        }
       }
     } else if (process.platform === 'linux') {
       if (argv.createDebianPackage) {

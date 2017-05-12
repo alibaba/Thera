@@ -12,14 +12,17 @@ EmptyLineRegExp = /(\r\n[\t ]*\r\n)|(\n[\t ]*\n)/g
 # of a {DisplayMarker}.
 module.exports =
 class Cursor extends Model
+  showCursorOnSelection: null
   screenPosition: null
   bufferPosition: null
   goalColumn: null
   visible: true
 
   # Instantiated by a {TextEditor}
-  constructor: ({@editor, @marker, id}) ->
+  constructor: ({@editor, @marker, @showCursorOnSelection, id}) ->
     @emitter = new Emitter
+
+    @showCursorOnSelection ?= true
 
     @assignId(id)
     @updateVisibility()
@@ -575,7 +578,10 @@ class Cursor extends Model
   isVisible: -> @visible
 
   updateVisibility: ->
-    @setVisible(@marker.getBufferRange().isEmpty())
+    if @showCursorOnSelection
+      @setVisible(true)
+    else
+      @setVisible(@marker.getBufferRange().isEmpty())
 
   ###
   Section: Comparing to another cursor
@@ -645,6 +651,11 @@ class Cursor extends Model
   Section: Private
   ###
 
+  setShowCursorOnSelection: (value) ->
+    if value isnt @showCursorOnSelection
+      @showCursorOnSelection = value
+      @updateVisibility()
+
   getNonWordCharacters: ->
     @editor.getNonWordCharacters(@getScopeDescriptor().getScopesArray())
 
@@ -652,9 +663,6 @@ class Cursor extends Model
     @clearSelection(autoscroll: false)
     fn()
     @autoscroll() if options.autoscroll ? @isLastCursor()
-
-  getPixelRect: ->
-    @editor.pixelRectForScreenRange(@getScreenRange())
 
   getScreenRange: ->
     {row, column} = @getScreenPosition()
@@ -682,7 +690,6 @@ class Cursor extends Model
     {row, column} = start
     scanRange = [[row-1, column], [0, 0]]
     position = new Point(0, 0)
-    zero = new Point(0, 0)
     @editor.backwardsScanInBufferRange EmptyLineRegExp, scanRange, ({range, stop}) ->
       position = range.start.traverse(Point(1, 0))
       stop() unless position.isEqual(start)
