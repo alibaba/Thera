@@ -1,11 +1,7 @@
 /** @babel */
 
 import {Emitter, Disposable, CompositeDisposable} from 'event-kit'
-<<<<<<< HEAD
-import {Point, Range} from 'atom'
-=======
 import {Point, Range} from 'text-buffer'
->>>>>>> atom/master
 import TextEditor from './text-editor'
 import ScopeDescriptor from './scope-descriptor'
 
@@ -15,10 +11,7 @@ const EDITOR_PARAMS_BY_SETTING_KEY = [
   ['editor.showInvisibles', 'showInvisibles'],
   ['editor.tabLength', 'tabLength'],
   ['editor.invisibles', 'invisibles'],
-<<<<<<< HEAD
-=======
   ['editor.showCursorOnSelection', 'showCursorOnSelection'],
->>>>>>> atom/master
   ['editor.showIndentGuide', 'showIndentGuide'],
   ['editor.showLineNumbers', 'showLineNumbers'],
   ['editor.softWrap', 'softWrapped'],
@@ -47,14 +40,8 @@ const GRAMMAR_SELECTION_RANGE = Range(Point.ZERO, Point(10, 0)).freeze()
 // done using your editor, be sure to call `dispose` on the returned disposable
 // to avoid leaking editors.
 export default class TextEditorRegistry {
-<<<<<<< HEAD
-  constructor ({config, grammarRegistry, clipboard, assert, packageManager}) {
-    this.assert = assert
-    this.clipboard = clipboard
-=======
   constructor ({config, grammarRegistry, assert, packageManager}) {
     this.assert = assert
->>>>>>> atom/master
     this.config = config
     this.grammarRegistry = grammarRegistry
     this.scopedSettingsDelegate = new ScopedSettingsDelegate(config)
@@ -122,14 +109,7 @@ export default class TextEditorRegistry {
   }
 
   build (params) {
-<<<<<<< HEAD
-    params = Object.assign({
-      clipboard: this.clipboard,
-      assert: this.assert
-    }, params)
-=======
     params = Object.assign({assert: this.assert}, params)
->>>>>>> atom/master
 
     let scope = null
     if (params.buffer) {
@@ -174,11 +154,7 @@ export default class TextEditorRegistry {
   // configuration.
   maintainConfig (editor) {
     if (this.editorsWithMaintainedConfig.has(editor)) {
-<<<<<<< HEAD
-      return
-=======
       return new Disposable(noop)
->>>>>>> atom/master
     }
     this.editorsWithMaintainedConfig.add(editor)
 
@@ -214,11 +190,7 @@ export default class TextEditorRegistry {
   }
 
   // Set a {TextEditor}'s grammar based on its path and content, and continue
-<<<<<<< HEAD
-  // to update its grammar as gramamrs are added or updated, or the editor's
-=======
   // to update its grammar as grammars are added or updated, or the editor's
->>>>>>> atom/master
   // file path changes.
   //
   // * `editor` The editor whose grammar will be maintained.
@@ -227,11 +199,7 @@ export default class TextEditorRegistry {
   // grammar.
   maintainGrammar (editor) {
     if (this.editorsWithMaintainedGrammar.has(editor)) {
-<<<<<<< HEAD
-      return
-=======
       return new Disposable(noop)
->>>>>>> atom/master
     }
 
     this.editorsWithMaintainedGrammar.add(editor)
@@ -420,11 +388,8 @@ function shouldEditorUseSoftTabs (editor, tabType, softTabs) {
   }
 }
 
-<<<<<<< HEAD
-=======
 function noop () {}
 
->>>>>>> atom/master
 class ScopedSettingsDelegate {
   constructor (config) {
     this.config = config
