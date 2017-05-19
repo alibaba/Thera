@@ -174,7 +174,7 @@ class PackageManager
     packagePath = fs.resolve(@packageDirPaths..., name)
     return packagePath if fs.isDirectorySync(packagePath)
 
-    packagePath = path.join(@resourcePath, 'node_modules', name)
+    packagePath = path.join(@resourcePath, 'node_modules', name) if @resourcePath
     return packagePath if @hasAtomEngine(packagePath)
 
   # Public: Is the package with the given name bundled with Atom?

@@ -10,7 +10,8 @@ StylesElement = require './styles-element'
 # which clone and attach style elements in different contexts.
 module.exports =
 class StyleManager
-  constructor: ({@configDirPath}) ->
+  constructor: (params) ->
+    {@configDirPath} = params if params
     @emitter = new Emitter
     @styleElements = []
     @styleElementsBySourcePath = {}
