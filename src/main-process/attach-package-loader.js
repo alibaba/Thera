@@ -11,23 +11,28 @@ module.exports = function () {
   
   const apmPath = getApmPath();
   const attachPackage = path.join(process.resourcesPath, 'attach-package');
-  fs.readdir(
-    attachPackage,
-    (error, files) => {
-      if (!error) {
-        files.filter((name) => name!=="." && name!=='..').forEach((name) => {
-          if (name !== 'dumplings') {
-            child_process.execFile(
-              apmPath,
-              ['link'],
-              {cwd: path.join(attachPackage, name), stdio: 'inherit'}
-            );
-          }
-        });
-      } else {
-        console.error(error);
-      }
+  if (fs.exists(attachPackage)) {
+    fs.readdir(
+      attachPackage,
+      (error, files) => {
+        if (!error) {
+          files.filter((name) => name!=="." && name!=='..').forEach((name) => {
+            if (name !== 'dumplings') {
+              child_process.execFile(
+                apmPath,
+                ['link'],
+                {cwd: path.join(attachPackage, name), stdio: 'inherit'}
+              );
+            }
+          });
+        } else {
+          console.error(error);
+        }
     });
+  } else {
+    console.warn(`escape attach package install, cause ${attachPackage} not exists.`)
+  }
+
 }
 
 function getApmPath() {

@@ -25,15 +25,13 @@
         "stopOnEntry": false,
         "args": [],
         "cwd": "${workspaceRoot}",
-        "runtimeExecutable": "${workspaceRoot}/electron/electron-v1.3.6-darwin-x64/Electron.app/Contents/MacOS/Electron",
+        "runtimeExecutable": "${workspaceRoot}/electron/electron-v1.3.15-darwin-x64/Electron.app/Contents/MacOS/Electron",
         "runtimeArgs": [
             ".",
             "--enable-logging"
         ],
         "env": {},
-        "externalConsole": false,
-        "sourceMaps": false,
-        "outDir": null
+        "sourceMaps": false
     }
   ]
 }
