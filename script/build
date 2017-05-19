@@ -68,7 +68,8 @@ generateMetadata()
 generateAPIDocs()
 dumpSymbols()
   .then(packageApplication)
-  .then(packagedAppPath => generateStartupSnapshot(packagedAppPath).then(() => packagedAppPath))
+  // escape snapshort for now, cause config-schema.coffee make it fall.
+  // .then(packagedAppPath => generateStartupSnapshot(packagedAppPath).then(() => packagedAppPath))
   .then(packagedAppPath => {
     if (process.platform === 'darwin') {
       if (argv.codeSign) {
