@@ -442,6 +442,9 @@ class AtomEnvironment extends Model
   getVersion: ->
     @appVersion ?= @getLoadSettings().appVersion
 
+  getTheraVersion: ->
+    @theraVersion ?= @getLoadSettings().theraVersion
+
   # Returns the release channel as a {String}. Will return one of `'dev', 'beta', 'stable'`
   getReleaseChannel: ->
     version = @getVersion()

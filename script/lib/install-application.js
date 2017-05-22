@@ -11,7 +11,7 @@ const CONFIG = require('../config')
 module.exports = function (packagedAppPath, installDir) {
   const packagedAppFileName = path.basename(packagedAppPath)
   if (process.platform === 'darwin') {
-    const installPrefix = installDir !== '' ? handleTilde(installDir) : path.join(path.sep, 'Applications')
+    const installPrefix = installDir !== undefined ? handleTilde(installDir) : path.join(path.sep, 'Applications')
     const installationDirPath = path.join(installPrefix, packagedAppFileName)
     if (fs.existsSync(installationDirPath)) {
       console.log(`Removing previously installed "${packagedAppFileName}" at "${installationDirPath}"`)

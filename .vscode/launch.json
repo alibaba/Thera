@@ -8,7 +8,8 @@
       "type": "node",
       "request": "launch",
       "name": "debug package",
-      "program": "${workspaceRoot}/script/build"
+      "program": "${workspaceRoot}/script/build",
+      "args": [""]
     },
     {
       "type": "node",
