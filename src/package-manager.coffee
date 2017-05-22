@@ -55,6 +55,7 @@ class PackageManager
     @registerPackageActivator(this, ['atom', 'textmate'])
 
   initialize: (params) ->
+    console.log('initialize package manager')
     {configDirPath, @devMode, safeMode, @resourcePath} = params
     if configDirPath? and not safeMode
       if @devMode
@@ -169,12 +170,14 @@ class PackageManager
   #
   # Return a {String} folder path or undefined if it could not be resolved.
   resolvePackagePath: (name) ->
+
     return name if fs.isDirectorySync(name)
 
     packagePath = fs.resolve(@packageDirPaths..., name)
     return packagePath if fs.isDirectorySync(packagePath)
 
     packagePath = path.join(@resourcePath, 'node_modules', name) if @resourcePath
+
     return packagePath if @hasAtomEngine(packagePath)
 
   # Public: Is the package with the given name bundled with Atom?
@@ -313,8 +316,8 @@ class PackageManager
     for packageDirPath in @packageDirPaths
       if fs.isDirectorySync(packageDirPath)
         for packagePath in fs.readdirSync(packageDirPath)
-          packagePath = path.join(packageDirPath, packagePath)
-          packageName = path.basename(packagePath)
+          packagePath = path.join(packageDirPath, packagePath) if packageDirPath and packagePath
+          packageName = path.basename(packagePath) if packagePath
           if not packageName.startsWith('.') and not packagesByName.has(packageName) and fs.isDirectorySync(packagePath)
             packages.push({
               name: packageName,
@@ -327,7 +330,7 @@ class PackageManager
       unless packagesByName.has(packageName)
         packages.push({
           name: packageName,
-          path: path.join(@resourcePath, 'node_modules', packageName),
+          path: path.join(@resourcePath, 'node_modules', packageName) if @resourcePath and packageName,
           isBundled: true
         })
 
@@ -621,14 +624,15 @@ class PackageManager
       isBundled = availablePackage.isBundled
     else
       packagePath = packagePathOrAvailablePackage
-      packageName = path.basename(packagePath)
+      packageName = path.basename(packagePath) if packagePath
       isBundled = @isBundledPackagePath(packagePath)
 
     if isBundled
       metadata = @packagesCache[packageName]?.metadata
 
     unless metadata?
-      if metadataPath = CSON.resolve(path.join(packagePath, 'package'))
+      metadataPath = CSON.resolve(path.join(packagePath, 'package')) if packagePath
+      if metadataPath
         try
           metadata = CSON.readFileSync(metadataPath)
           @normalizePackageMetadata(metadata)

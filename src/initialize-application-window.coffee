@@ -66,7 +66,7 @@ global.atom = new AtomEnvironment({
   enablePersistence: true
 })
 
-global.atom.preloadPackages()
+# global.atom.preloadPackages()
 
 # Like sands through the hourglass, so are the days of our lives.
 module.exports = ({blobStore}) ->
