@@ -111,7 +111,7 @@ dumpSymbols()
       console.log('Skipping artifacts compression. Specify the --compress-artifacts option to compress Thera binaries (and symbols on macOS)'.gray)
     }
 
-    if (argv.install) {
+    if (argv.install !== undefined) {
       installApplication(packagedAppPath)
     } else {
       console.log('Skipping installation. Specify the --install option to install Thera'.gray)
