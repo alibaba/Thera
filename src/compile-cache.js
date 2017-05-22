@@ -7,6 +7,7 @@
 
 var path = require('path')
 var fs = require('fs-plus')
+var gfs = require('graceful-fs')
 var sourceMapSupport = require('@atom/source-map-support')
 
 var PackageTranspilationRegistry = require('./package-transpilation-registry')
@@ -81,7 +82,7 @@ exports.resetCacheStats = function () {
 }
 
 function compileFileAtPath (compiler, filePath, extension) {
-  var sourceCode = fs.readFileSync(filePath, 'utf8')
+  var sourceCode = gfs.readFileSync(filePath, 'utf8')
   if (compiler.shouldCompile(sourceCode, filePath)) {
     var cachePath = compiler.getCachePath(sourceCode, filePath)
     var compiledCode = readCachedJavascript(cachePath)
