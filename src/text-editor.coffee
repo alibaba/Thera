@@ -14,6 +14,8 @@ TextMateScopeSelector = require('first-mate').ScopeSelector
 GutterContainer = require './gutter-container'
 TextEditorElement = require './text-editor-element'
 {isDoubleWidthCharacter, isHalfWidthCharacter, isKoreanCharacter, isWrapBoundary} = require './text-utils'
+LineTailManager = require './line-tail-manager'
+
 
 ZERO_WIDTH_NBSP = '\ufeff'
 MAX_SCREEN_LINE_LENGTH = 500
@@ -198,6 +200,8 @@ class TextEditor extends Model
     @selectionsMarkerLayer ?= @addMarkerLayer(maintainHistory: true, persistent: true)
     @selectionsMarkerLayer.trackDestructionInOnDidCreateMarkerCallbacks = true
 
+    @lineTailManager = new LineTailManager this
+
     @decorationManager = new DecorationManager(@displayLayer)
     @decorateMarkerLayer(@displayLayer.foldsMarkerLayer, {type: 'line-number', class: 'folded'})
 
@@ -226,6 +230,19 @@ class TextEditor extends Model
       @backgroundWorkHandle = requestIdleCallback(@doBackgroundWork)
     else
       @backgroundWorkHandle = null
+
+  # line: number 1, 2, 3, 4...
+  # lineTailParams: {content: 'xxxx', class: 'css-class'}
+  # Returns a Indicator
+  # message should container key member to identify itsself
+  lineTailIndicatorAdd: (message) ->
+    @lineTailManager.lineTailIndicatorAdd(message)
+
+  # line: number 1, 2, 3, 4...
+  # lineTailParams: {content: 'xxxx', class: 'css-class'}
+  # Returns a Indicator
+  lineTailIndicatorDelete: (message) ->
+    @lineTailManager.lineTailIndicatorDelete(message)
 
   update: (params) ->
     displayLayerParams = {}
@@ -350,6 +367,10 @@ class TextEditor extends Model
           if value isnt @autoWidth
             @autoWidth = value
             @presenter?.didChangeAutoWidth()
+
+        when 'lineTail'
+          @lineTailManager.setChange true
+          @presenter?.emitDidUpdateState()
 
         when 'showCursorOnSelection'
           if value isnt @showCursorOnSelection

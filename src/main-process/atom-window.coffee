@@ -57,6 +57,7 @@ class AtomWindow
 
     loadSettings = Object.assign({}, settings)
     loadSettings.appVersion = app.getVersion()
+    loadSettings.theraVersion = require(path.join(@resourcePath, 'package.json')).theraVersion
     loadSettings.resourcePath = @resourcePath
     loadSettings.devMode ?= false
     loadSettings.safeMode ?= false

@@ -27,7 +27,8 @@ const getAppDirectory = () => {
 module.exports = {
   setAtomHome: (homePath) => {
     // When a read-writeable .atom folder exists above app use that
-    const portableHomePath = path.join(getAppDirectory(), '..', '.atom')
+    const portableHomePath = path.join(getAppDirectory(), '..', '.thera')
+    // const portableHomePath = path.join(getAppDirectory(), '..', '.atom')
     if (fs.existsSync(portableHomePath)) {
       if (hasWriteAccess(portableHomePath)) {
         process.env.ATOM_HOME = portableHomePath
@@ -42,8 +43,9 @@ module.exports = {
       return
     }
 
-    // Fall back to default .atom folder in users home folder
-    process.env.ATOM_HOME = path.join(homePath, '.atom')
+    // Fall back to default .thera folder in users home folder
+    process.env.ATOM_HOME = path.join(homePath, '.thera')
+    // process.env.ATOM_HOME = path.join(homePath, '.atom')
   },
 
   setUserData: (app) => {

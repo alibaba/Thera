@@ -11,7 +11,8 @@ module.exports = function () {
   
   const apmPath = getApmPath();
   const attachPackage = path.join(process.resourcesPath, 'attach-package');
-  if (fs.exists(attachPackage)) {
+  console.log(`attach package path ${attachPackage}`);
+  if (fs.existsSync(attachPackage)) {
     fs.readdir(
       attachPackage,
       (error, files) => {

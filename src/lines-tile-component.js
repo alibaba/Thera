@@ -2,10 +2,11 @@ const HighlightsComponent = require('./highlights-component')
 const ZERO_WIDTH_NBSP = '\ufeff'
 
 module.exports = class LinesTileComponent {
-  constructor ({presenter, id, domElementPool, assert, views}) {
+  constructor ({presenter, id, domElementPool, assert, views, lineTailManager}) {
     this.id = id
     this.presenter = presenter
     this.views = views
+    this.lineTailManager = lineTailManager
     this.domElementPool = domElementPool
     this.assert = assert
     this.lineNodesByLineId = {}
@@ -114,6 +115,11 @@ module.exports = class LinesTileComponent {
 
     const newLineIds = []
     const newLineNodes = []
+
+    if (this.lineTailManager.isChanged()) {
+      this.removeLineNodes()
+    }
+
     for (const id of Object.keys(this.newTileState.lines)) {
       const lineState = this.newTileState.lines[id]
       if (this.oldTileState.lines.hasOwnProperty(id)) {
@@ -208,6 +214,17 @@ module.exports = class LinesTileComponent {
     }
 
     this.textNodesByLineId[id] = textNodes
+
+    let bufferRow = this.presenter.model.bufferRowForScreenRow(screenRow)
+    let objText = this.lineTailManager.getTextByLine(bufferRow)
+    if (objText) {
+      let {text, tipClass} = objText
+      let tailNode = this.domElementPool.buildElement('span')
+      tailNode.textContent = text
+      tailNode.classList = tipClass
+      lineNode.appendChild(tailNode)
+    }
+
     return lineNode
   }
 

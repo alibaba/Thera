@@ -77,7 +77,7 @@ class TextEditorComponent
     # document.activeElement.
     hiddenInputElement.getModel = => @editor
 
-    @linesComponent = new LinesComponent({@presenter, @domElementPool, @assert, @grammars, @views})
+    @linesComponent = new LinesComponent({@presenter, @domElementPool, @assert, @grammars, @views, lineTailManager: @editor.lineTailManager})
     @scrollViewNode.appendChild(@linesComponent.getDomNode())
 
     @offScreenBlockDecorationsComponent = new OffScreenBlockDecorationsComponent({@presenter, @views})

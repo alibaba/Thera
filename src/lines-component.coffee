@@ -6,7 +6,7 @@ module.exports =
 class LinesComponent extends TiledComponent
   placeholderTextDiv: null
 
-  constructor: ({@views, @presenter, @domElementPool, @assert}) ->
+  constructor: ({@views, @presenter, @domElementPool, @assert, @lineTailManager}) ->
     @DummyLineNode = document.createElement('div')
     @DummyLineNode.className = 'line'
     @DummyLineNode.style.position = 'absolute'
@@ -67,7 +67,7 @@ class LinesComponent extends TiledComponent
 
     @cursorsComponent.updateSync(state)
 
-  buildComponentForTile: (id) -> new LinesTileComponent({id, @presenter, @domElementPool, @assert, @views})
+  buildComponentForTile: (id) -> new LinesTileComponent({id, @presenter, @domElementPool, @assert, @views, @lineTailManager})
 
   buildEmptyState: ->
     {tiles: {}}
