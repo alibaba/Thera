@@ -67,8 +67,8 @@
     "temp": "0.8.1",
     "text-buffer": "9.3.0",
     "thera-debugger": "git+https://github.com/TheraPackages/thera-debugger.git#v1.2.8",
-    "tool-bar": "git+https://github.com/TheraPackages/tool-bar.git#v1.0.8",
-    "tool-bar-main": "git+https://github.com/TheraPackages/tool-bar-main.git#v0.1.6",
+    "tool-bar": "git+https://github.com/TheraPackages/tool-bar.git#v1.0.9",
+    "tool-bar-main": "git+https://github.com/TheraPackages/tool-bar-main.git#v0.1.7",
     "typescript-simple": "1.0.0",
     "underscore-plus": "^1.6.6",
     "vue-template-compiler": "~2.1.8",
@@ -180,8 +180,8 @@
     "create-files": "0.0.2",
     "mainwindow": "0.1.7",
     "thera-debugger": "1.2.8",
-    "tool-bar": "1.0.8",
-    "tool-bar-main": "0.1.6",
+    "tool-bar": "1.0.9",
+    "tool-bar-main": "0.1.7",
     "we-syntax": "0.0.3",
     "thera-background-tips": "0.1.7"
   },
@@ -199,7 +199,7 @@
     "linter": "git+https://github.com/TheraPackages/linter.git#v1.0.8",
     "autocomplete-weex": "git+https://github.com/TheraPackages/autocomplete-weex.git",
     "atom-notifier": "git+https://github.com/TheraPackages/notifier.git#v0.5.4",
-    "weex-run": "git+https://github.com/TheraPackages/weex-run.git#v1.1.28",
+    "weex-run": "git+https://github.com/TheraPackages/weex-run.git#v1.1.30",
     "atom-beautify": "git+https://github.com/TheraPackages/atom-beautify.git#v0.29.19"
   },
   "standard": {
