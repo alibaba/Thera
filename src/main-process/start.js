@@ -68,6 +68,14 @@ module.exports = function start (resourcePath, startTime) {
     const AtomApplication = require(path.join(args.resourcePath, 'src', 'main-process', 'atom-application'))
     AtomApplication.open(args)
   })
+
+  setupJavaScriptArguments()
+}
+
+// setup command line param for chrome
+function setupJavaScriptArguments () {
+  app.commandLine.appendSwitch('remote-debugging-port', '8315')
+  app.commandLine.appendSwitch('js-flags', '--harmony')
 }
 
 function handleStartupEventWithSquirrel () {
