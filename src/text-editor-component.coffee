@@ -1,4 +1,3 @@
-_ = require 'underscore-plus'
 scrollbarStyle = require 'scrollbar-style'
 {Range, Point} = require 'text-buffer'
 {CompositeDisposable} = require 'event-kit'
@@ -9,12 +8,12 @@ TextEditorPresenter = require './text-editor-presenter'
 GutterContainerComponent = require './gutter-container-component'
 InputComponent = require './input-component'
 LinesComponent = require './lines-component'
+OffScreenBlockDecorationsComponent = require './off-screen-block-decorations-component'
 ScrollbarComponent = require './scrollbar-component'
 ScrollbarCornerComponent = require './scrollbar-corner-component'
 OverlayManager = require './overlay-manager'
 DOMElementPool = require './dom-element-pool'
 LinesYardstick = require './lines-yardstick'
-BlockDecorationsComponent = require './block-decorations-component'
 LineTopIndex = require 'line-top-index'
 
 module.exports =
@@ -36,7 +35,6 @@ class TextEditorComponent
   gutterComponent: null
   mounted: true
   initialized: false
-  lineTailManager: null
 
   Object.defineProperty @prototype, "domNode",
     get: -> @domNodeValue
@@ -44,8 +42,7 @@ class TextEditorComponent
       @assert domNode?, "TextEditorComponent::domNode was set to null."
       @domNodeValue = domNode
 
-  constructor: ({@editor, @hostElement, @rootElement, @stylesElement, tileSize, @views, @themes, @assert}) ->
-    @lineTailManager = @editor.lineTailManager
+  constructor: ({@editor, @hostElement, tileSize, @views, @themes, @styles, @assert, hiddenInputElement}) ->
     @tileSize = tileSize if tileSize?
     @disposables = new CompositeDisposable
 
@@ -67,24 +64,24 @@ class TextEditorComponent
     @domNode = document.createElement('div')
     @domNode.classList.add('editor-contents--private')
 
-    insertionPoint = document.createElement('content')
-    insertionPoint.setAttribute('select', 'atom-overlay')
-    @domNode.appendChild(insertionPoint)
-    @overlayManager = new OverlayManager(@presenter, @hostElement, @views)
-    @blockDecorationsComponent = new BlockDecorationsComponent(@hostElement, @views, @presenter, @domElementPool)
+    @overlayManager = new OverlayManager(@presenter, @domNode, @views)
 
     @scrollViewNode = document.createElement('div')
     @scrollViewNode.classList.add('scroll-view')
     @domNode.appendChild(@scrollViewNode)
 
-    @hiddenInputComponent = new InputComponent
-    @scrollViewNode.appendChild(@hiddenInputComponent.getDomNode())
+    @hiddenInputComponent = new InputComponent(hiddenInputElement)
+    @scrollViewNode.appendChild(hiddenInputElement)
+    # Add a getModel method to the hidden input component to make it easy to
+    # access the editor in response to DOM events or when using
+    # document.activeElement.
+    hiddenInputElement.getModel = => @editor
 
-    @linesComponent = new LinesComponent({@presenter, @hostElement, @domElementPool, @assert, @grammars, @lineTailManager})
+    @linesComponent = new LinesComponent({@presenter, @domElementPool, @assert, @grammars, @views, lineTailManager: @editor.lineTailManager})
     @scrollViewNode.appendChild(@linesComponent.getDomNode())
 
-    if @blockDecorationsComponent?
-      @linesComponent.getDomNode().appendChild(@blockDecorationsComponent.getDomNode())
+    @offScreenBlockDecorationsComponent = new OffScreenBlockDecorationsComponent({@presenter, @views})
+    @scrollViewNode.appendChild(@offScreenBlockDecorationsComponent.getDomNode())
 
     @linesYardstick = new LinesYardstick(@editor, @linesComponent, lineTopIndex)
     @presenter.setLinesYardstick(@linesYardstick)
@@ -101,9 +98,9 @@ class TextEditorComponent
     @observeEditor()
     @listenForDOMEvents()
 
-    @disposables.add @stylesElement.onDidAddStyleElement @onStylesheetsChanged
-    @disposables.add @stylesElement.onDidUpdateStyleElement @onStylesheetsChanged
-    @disposables.add @stylesElement.onDidRemoveStyleElement @onStylesheetsChanged
+    @disposables.add @styles.onDidAddStyleElement @onStylesheetsChanged
+    @disposables.add @styles.onDidUpdateStyleElement @onStylesheetsChanged
+    @disposables.add @styles.onDidRemoveStyleElement @onStylesheetsChanged
     unless @themes.isInitialLoadComplete()
       @disposables.add @themes.onDidChangeActiveThemes @onAllThemesLoaded
     @disposables.add scrollbarStyle.onDidChangePreferredScrollbarStyle @refreshScrollbars
@@ -131,12 +128,11 @@ class TextEditorComponent
     @domNode
 
   updateSync: ->
-    
     @updateSyncPreMeasurement()
 
     @oldState ?= {width: null}
     @newState = @presenter.getPostMeasurementState()
-    
+
     if @editor.getLastSelection()? and not @editor.getLastSelection().isEmpty()
       @domNode.classList.add('has-selection')
     else
@@ -146,7 +142,7 @@ class TextEditorComponent
       @domNode.classList.toggle('is-focused', @newState.focused)
 
     @performedInitialMeasurement = false if @editor.isDestroyed()
-    
+
     if @performedInitialMeasurement
       if @newState.height isnt @oldState.height
         if @newState.height?
@@ -167,10 +163,10 @@ class TextEditorComponent
     else
       @gutterContainerComponent?.getDomNode()?.remove()
       @gutterContainerComponent = null
-    
+
     @hiddenInputComponent.updateSync(@newState)
+    @offScreenBlockDecorationsComponent.updateSync(@newState)
     @linesComponent.updateSync(@newState)
-    @blockDecorationsComponent?.updateSync(@newState)
     @horizontalScrollbarComponent.updateSync(@newState)
     @verticalScrollbarComponent.updateSync(@newState)
     @scrollbarCornerComponent.updateSync(@newState)
@@ -190,7 +186,8 @@ class TextEditorComponent
 
   readAfterUpdateSync: =>
     @overlayManager?.measureOverlays()
-    @blockDecorationsComponent?.measureBlockDecorations() if @isVisible()
+    @linesComponent.measureBlockDecorations()
+    @offScreenBlockDecorationsComponent.measureBlockDecorations()
 
   mountGutterContainerComponent: ->
     @gutterContainerComponent = new GutterContainerComponent({@editor, @onLineNumberGutterMouseDown, @domElementPool, @views})
@@ -346,12 +343,9 @@ class TextEditorComponent
     @scopedConfigDisposables = new CompositeDisposable
     @disposables.add(@scopedConfigDisposables)
 
-    scope = @editor.getRootScopeDescriptor()
-
   focused: ->
     if @mounted
       @presenter.setFocused(true)
-      @hiddenInputComponent.getDomNode().focus()
 
   blurred: ->
     if @mounted
@@ -425,7 +419,6 @@ class TextEditorComponent
 
   onScrollViewScroll: =>
     if @mounted
-      console.warn "TextEditorScrollView scrolled when it shouldn't have."
       @scrollViewNode.scrollTop = 0
       @scrollViewNode.scrollLeft = 0
 
@@ -532,9 +525,17 @@ class TextEditorComponent
     @presenter.invalidateBlockDecorationDimensions(arguments...)
 
   onMouseDown: (event) =>
-    unless event.button is 0 or (event.button is 1 and process.platform is 'linux')
-      # Only handle mouse down events for left mouse button on all platforms
-      # and middle mouse button on Linux since it pastes the selection clipboard
+    # Handle middle mouse button on linux platform only (paste clipboard)
+    if event.button is 1 and process.platform is 'linux'
+      if selection = require('./safe-clipboard').readText('selection')
+        screenPosition = @screenPositionForMouseEvent(event)
+        @editor.setCursorScreenPosition(screenPosition, autoscroll: false)
+        @editor.insertText(selection)
+        return
+
+    # Handle mouse down events for left mouse button only
+    # (except middle mouse button on linux platform, see above)
+    unless event.button is 0
       return
 
     return if event.target?.classList.contains('horizontal-scrollbar')
@@ -621,7 +622,7 @@ class TextEditorComponent
         screenRange = new Range(startPosition, startPosition).union(initialRange)
         @editor.getLastSelection().setScreenRange(screenRange, reversed: true, autoscroll: false, preserveFolds: true)
       else
-        endPosition = [dragRow + 1, 0]
+        endPosition = @editor.clipScreenPosition([dragRow + 1, 0], clipDirection: 'backward')
         screenRange = new Range(endPosition, endPosition).union(initialRange)
         @editor.getLastSelection().setScreenRange(screenRange, reversed: false, autoscroll: false, preserveFolds: true)
 
@@ -681,7 +682,6 @@ class TextEditorComponent
         stopDragging()
         @editor.finalizeSelections()
         @editor.mergeIntersectingSelections()
-      pasteSelectionClipboard(event)
 
     stopDragging = ->
       dragging = false
@@ -720,11 +720,6 @@ class TextEditorComponent
 
     scaleScrollDelta = (scrollDelta) ->
       Math.pow(scrollDelta / 2, 3) / 280
-
-    pasteSelectionClipboard = (event) =>
-      if event?.which is 2 and process.platform is 'linux'
-        if selection = require('./safe-clipboard').readText('selection')
-          @editor.insertText(selection)
 
     window.addEventListener('mousemove', onMouseMove)
     window.addEventListener('mouseup', onMouseUp)
@@ -914,7 +909,7 @@ class TextEditorComponent
 
   screenRowForNode: (node) ->
     while node?
-      if screenRow = node.dataset.screenRow
+      if screenRow = node.dataset?.screenRow
         return parseInt(screenRow)
       node = node.parentElement
     null
@@ -975,9 +970,7 @@ class TextEditorComponent
   updateParentViewFocusedClassIfNeeded: ->
     if @oldState.focused isnt @newState.focused
       @hostElement.classList.toggle('is-focused', @newState.focused)
-      @rootElement.classList.toggle('is-focused', @newState.focused)
       @oldState.focused = @newState.focused
 
   updateParentViewMiniClass: ->
     @hostElement.classList.toggle('mini', @editor.isMini())
-    @rootElement.classList.toggle('mini', @editor.isMini())

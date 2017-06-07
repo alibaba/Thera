@@ -1,10 +1,18 @@
+image: Visual Studio 2015
+
 version: "{build}"
 
 skip_tags: true
 clone_folder: c:\projects\atom
 clone_depth: 10
 
+branches:
+  only:
+  - master
+  - /^[0-9.]+-releases$/
+
 platform:
+  - x64
   - x86
 
 environment:
@@ -12,7 +20,10 @@ environment:
     ATOM_DEV_RESOURCE_PATH: c:\projects\atom
 
   matrix:
-  - NODE_VERSION: 4.4.5
+  - NODE_VERSION: 6.8.0
+
+matrix:
+  fast_finish: true
 
 install:
   - SET PATH=C:\Program Files\Atom\resources\cli;%PATH%
@@ -20,10 +31,15 @@ install:
   - npm install -g npm
 
 build_script:
-  - cd %APPVEYOR_BUILD_FOLDER%
-  - script\build.cmd --code-sign --create-windows-installer --compress-artifacts
+  - CD %APPVEYOR_BUILD_FOLDER%
+  - IF [%APPVEYOR_REPO_BRANCH:~-9%]==[-releases] (
+      script\build.cmd --code-sign --create-windows-installer --compress-artifacts
+    ) ELSE (
+      script\build.cmd --code-sign --compress-artifacts
+    )
 
 test_script:
+  - script\lint.cmd
   - script\test.cmd
 
 deploy: off
@@ -47,6 +63,5 @@ cache:
   - '%APPVEYOR_BUILD_FOLDER%\node_modules'
   - '%APPVEYOR_BUILD_FOLDER%\electron'
   - '%USERPROFILE%\.atom\.apm'
-  - '%USERPROFILE%\.atom\.node-gyp\.atom'
-  - '%USERPROFILE%\.atom\.npm'
   - '%USERPROFILE%\.atom\compile-cache'
+  - '%USERPROFILE%\.atom\snapshot-cache'
