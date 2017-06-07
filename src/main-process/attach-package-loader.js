@@ -12,7 +12,6 @@ module.exports = function () {
   atomPaths.setAtomHome(app.getPath('home'))
   const apmPath = getApmPath();
   const attachPackage = path.join(process.resourcesPath, 'attach-package');
-  const _this = this;
   fs.exists(attachPackage, (exists) => {
     if (exists) {
       fs.readdir(
@@ -20,13 +19,9 @@ module.exports = function () {
         (error, files) => {
           if (!error) {
             const linktoPath = path.join(process.env.ATOM_HOME, 'packages');
+            // install all attach packages except 'dumplings'
             files.filter((name) => name!=="." && name!=='..' && name !== 'dumplings').forEach((name) => {
-                // fs.exists(path.join(linktoPath, name), (hasThatPackage) => {
-                //   // skip packages already installed
-                //   if (!hasThatPackage) {
-                    _this.linkPackage(apmPath, path.join(attachPackage, name));
-                //   }
-                // })
+              linkPackage(apmPath, path.join(attachPackage, name));
             });
           } else {
             console.error(error);
@@ -39,6 +34,7 @@ module.exports = function () {
 }
 
 function linkPackage(apmPath, packagePath) {
+  console.log(`link package ${packagePath} `)
   child_process.execFile(
     apmPath,
     ['link'],
