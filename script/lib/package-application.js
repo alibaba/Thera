@@ -1,4 +1,5 @@
 'use strict'
+
 const assert = require('assert')
 const childProcess = require('child_process')
 const electronPackager = require('electron-packager')
@@ -20,7 +21,7 @@ module.exports = function () {
     'app-bundle-id': 'com.tmall.thera',
     'app-copyright': `Copyright © 2014-${(new Date()).getFullYear()} GitHub, Inc. All rights reserved.`,
     'app-version': CONFIG.appMetadata.version,
-    'arch': process.platform === 'win32' ? 'ia32' : 'x64',
+    'arch': process.platform === 'darwin' ? 'x64' : process.arch, // OS X is 64-bit only
     'asar': {unpack: buildAsarUnpackGlobExpression()},
     'build-version': CONFIG.appMetadata.version,
     'download': {cache: CONFIG.electronDownloadPath},
@@ -215,10 +216,9 @@ function copyNonASARResources (packagedAppPath, bundledResourcesPath) {
   } else if (process.platform === 'linux') {
     fs.copySync(path.join(CONFIG.repositoryRootPath, 'resources', 'app-icons', CONFIG.channel, 'png', '1024.png'), path.join(packagedAppPath, 'atom.png'))
   } else if (process.platform === 'win32') {
-    [ 'atom.cmd', 'atom.sh', 'atom.js', 'apm.cmd', 'apm.sh', 'file.ico' ]
+    [ 'atom.cmd', 'atom.sh', 'atom.js', 'apm.cmd', 'apm.sh', 'file.ico', 'folder.ico' ]
       .forEach(file => fs.copySync(path.join('resources', 'win', file), path.join(bundledResourcesPath, 'cli', file)))
   }
-  
 
   console.log(`Writing LICENSE.md to ${bundledResourcesPath}`)
   return getLicenseText().then((licenseText) => {
@@ -312,6 +312,9 @@ function renamePackagedAppDir (packageOutputDirPath) {
   } else {
     const appName = CONFIG.channel === 'beta' ? 'Thera Beta' : 'Thera'
     packagedAppPath = path.join(CONFIG.buildOutputPath, appName)
+    if (process.platform === 'win32' && process.arch !== 'ia32') {
+      packagedAppPath += ` ${process.arch}`
+    }
     if (fs.existsSync(packagedAppPath)) fs.removeSync(packagedAppPath)
     fs.renameSync(packageOutputDirPath, packagedAppPath)
   }

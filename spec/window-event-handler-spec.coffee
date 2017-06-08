@@ -1,13 +1,10 @@
 KeymapManager = require 'atom-keymap'
-path = require 'path'
-fs = require 'fs-plus'
-temp = require 'temp'
 TextEditor = require '../src/text-editor'
 WindowEventHandler = require '../src/window-event-handler'
 {ipcRenderer} = require 'electron'
 
 describe "WindowEventHandler", ->
-  [projectPath, windowEventHandler] = []
+  [windowEventHandler] = []
 
   beforeEach ->
     atom.uninstallWindowEventHandler()
@@ -18,8 +15,8 @@ describe "WindowEventHandler", ->
       loadSettings.initialPath = initialPath
       loadSettings
     atom.project.destroy()
-    windowEventHandler = new WindowEventHandler({atomEnvironment: atom, applicationDelegate: atom.applicationDelegate, window, document})
-    projectPath = atom.project.getPaths()[0]
+    windowEventHandler = new WindowEventHandler({atomEnvironment: atom, applicationDelegate: atom.applicationDelegate})
+    windowEventHandler.initialize(window, document)
 
   afterEach ->
     windowEventHandler.unsubscribe()
@@ -27,6 +24,7 @@ describe "WindowEventHandler", ->
 
   describe "when the window is loaded", ->
     it "doesn't have .is-blurred on the body tag", ->
+      return if process.platform is 'win32' #Win32TestFailures - can not steal focus
       expect(document.body.className).not.toMatch("is-blurred")
 
   describe "when the window is blurred", ->

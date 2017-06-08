@@ -17,7 +17,6 @@ const electronDownloadPath = path.join(repositoryRootPath, 'electron')
 const homeDirPath = process.env.HOME || process.env.USERPROFILE
 // const atomHomeDirPath = path.join(homeDirPath, '.atom')
 const atomHomeDirPath = path.join(homeDirPath, '.thera')
-
 const appMetadata = require(path.join(repositoryRootPath, 'package.json'))
 const apmMetadata = require(path.join(apmRootPath, 'package.json'))
 const channel = getChannel()
@@ -27,7 +26,8 @@ module.exports = {
   repositoryRootPath, apmRootPath, scriptRootPath,
   buildOutputPath, docsOutputPath, intermediateAppPath, symbolsPath,
   electronDownloadPath, atomHomeDirPath, homeDirPath,
-  getApmBinPath, getNpmBinPath, getTnpmBinPath
+  getApmBinPath, getNpmBinPath, getTnpmBinPath,
+  snapshotAuxiliaryData: {}
 }
 
 function getChannel () {
