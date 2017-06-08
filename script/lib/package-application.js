@@ -117,6 +117,13 @@ function installAttachPackages (packagedAppPath, bundledResourcesPath) {
       }
     })
 
+    console.log(`Rebuild attach package from ${path.join(CONFIG.repositoryRootPath, 'attach-package')}`)
+    childProcess.execFileSync(
+      CONFIG.getNpmBinPath(),
+      ['rebuild', '--runtime=electron', '--target=1.3.6', '--disturl=https://atom.io/download/atom-shell', '--abi=49'],
+      {env: process.env, cwd: path.join(CONFIG.repositoryRootPath, 'attach-package'), stdio:'inherit'}
+    )
+
     console.log(`Copy attach package from ${path.join(CONFIG.repositoryRootPath, 'attach-package', 'node_modules')} to ${path.join(bundledResourcesPath, 'attach-package')}`)
     mkdirp.sync(path.join(bundledResourcesPath, 'attach-package'))
     fs.copySync(
