@@ -76,7 +76,7 @@
     "temp": "^0.8.3",
     "text-buffer": "11.4.1",
     "thera-about": "0.1.1",
-    "thera-background-tips": "git+https://github.com/TheraPackages/background-tips.git#v0.1.7",
+    "thera-background-tips": "git+https://github.com/TheraPackages/background-tips.git#v0.1.8",
     "thera-debug-frontend": "git+https://github.com/TheraPackages/thera-debug-frontend.git#v0.2.17",
     "thera-left-bar": "git+https://github.com/TheraPackages/thera-left-bar.git#v0.2.1",
     "tool-bar": "git+https://github.com/TheraPackages/tool-bar.git#v1.0.9",
@@ -84,7 +84,6 @@
     "typescript-simple": "1.0.0",
     "underscore-plus": "^1.6.6",
     "vue-template-compiler": "~2.1.8",
-    "we-syntax": "git+https://github.com/TheraPackages/we-syntax.git",
     "winreg": "^1.2.1",
     "thera-autocomplete-plus-plus": "git+https://github.com/TheraPackages/thera-autocomplete-plus-plus.git#v0.1.6",
     "thera-luaview": "git+https://github.com/TheraPackages/thera-luaview.git#v0.0.22",
@@ -194,8 +193,7 @@
     "thera-debugger": "1.3.1",
     "tool-bar": "1.0.9",
     "tool-bar-main": "0.1.7",
-    "we-syntax": "0.0.3",
-    "thera-background-tips": "0.1.7"
+    "thera-background-tips": "0.1.8"
   },
   "private": true,
   "scripts": {
@@ -205,10 +203,11 @@
   "attach-package": {
     "file-icons": "git+https://github.com/file-icons/atom.git#v2.0.17",
     "seti-ui": "git+https://github.com/TheraPackages/thera-seti-ui.git#v1.3.5",
+    "we-syntax": "git+https://github.com/TheraPackages/we-syntax.git#v0.0.4",
     "dumplings": "git+https://github.com/TheraPackages/dumplings.git#v2.0.10",
     "symbols-tree-view": "git+https://github.com/TheraPackages/symbols-tree-view.git#v0.13.15",
     "linter-weex": "git+https://github.com/TheraPackages/linter-weex.git#v0.1.4",
-    "linter": "git+https://github.com/TheraPackages/linter.git#v1.0.8",
+    "linter": "git+https://github.com/TheraPackages/linter.git#v1.0.9",
     "autocomplete-weex": "git+https://github.com/TheraPackages/autocomplete-weex.git#v0.1.1",
     "autocomplete-weexvue": "git+https://github.com/TheraPackages/autocomplete-weexvue.git#v0.1.3",
     "atom-notifier": "git+https://github.com/TheraPackages/notifier.git#v0.5.4",
