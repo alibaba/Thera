@@ -192,6 +192,7 @@ class Package
       @activationHookSubscriptions?.dispose()
     catch error
       @handleError("Failed to activate the #{@name} package", error)
+      console.warn(error)
 
     @resolveActivationPromise?()
 
