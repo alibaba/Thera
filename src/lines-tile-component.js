@@ -118,6 +118,7 @@ module.exports = class LinesTileComponent {
 
     if (this.lineTailManager.isChanged()) {
       this.removeLineNodes()
+      this.lineTailManager.setChange(false);
     }
 
     for (const id of Object.keys(this.newTileState.lines)) {
