@@ -208,7 +208,7 @@
     "autocomplete-weex": "git+https://github.com/TheraPackages/autocomplete-weex.git#v0.1.1",
     "autocomplete-weexvue": "git+https://github.com/TheraPackages/autocomplete-weexvue.git#v0.1.3",
     "atom-notifier": "git+https://github.com/TheraPackages/notifier.git#v0.5.4",
-    "weex-run": "git+https://github.com/TheraPackages/weex-run.git#v1.1.40",
+    "weex-run": "git+https://github.com/TheraPackages/weex-run.git#v1.1.41",
     "atom-beautify": "git+https://github.com/TheraPackages/atom-beautify.git#v0.29.19",
     "atom-ternjs": "https://github.com/TheraPackages/atom-ternjs.git#v0.18.3"
   },
