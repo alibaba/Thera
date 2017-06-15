@@ -107,6 +107,7 @@ module.exports = class LinesTileComponent {
   }
 
   updateLineNodes () {
+    
     for (const id of Object.keys(this.oldTileState.lines)) {
       if (!this.newTileState.lines.hasOwnProperty(id)) {
         this.removeLineNode(id)
@@ -115,10 +116,10 @@ module.exports = class LinesTileComponent {
 
     const newLineIds = []
     const newLineNodes = []
-
+    // console.log("+++++++");
     if (this.lineTailManager.isChanged()) {
       this.removeLineNodes()
-      this.lineTailManager.setChange(false);
+      // console.log('...))((...');
     }
 
     for (const id of Object.keys(this.newTileState.lines)) {
@@ -216,9 +217,13 @@ module.exports = class LinesTileComponent {
 
     this.textNodesByLineId[id] = textNodes
 
+    
+
     let bufferRow = this.presenter.model.bufferRowForScreenRow(screenRow)
+    
     let objText = this.lineTailManager.getTextByLine(bufferRow)
     if (objText) {
+      console.log(objText);
       let {text, tipClass} = objText
       let tailNode = this.domElementPool.buildElement('span')
       tailNode.textContent = text

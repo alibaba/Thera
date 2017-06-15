@@ -183,6 +183,7 @@ class TextEditorComponent
 
   updateSyncPreMeasurement: ->
     @linesComponent.updateSync(@presenter.getPreMeasurementState())
+    @editor.lineTailManager.setChange false
 
   readAfterUpdateSync: =>
     @overlayManager?.measureOverlays()

@@ -204,7 +204,7 @@
     "dumplings": "git+https://github.com/TheraPackages/dumplings.git#v2.0.10",
     "symbols-tree-view": "git+https://github.com/TheraPackages/symbols-tree-view.git#v0.13.16",
     "linter-weex": "git+https://github.com/TheraPackages/linter-weex.git#v0.1.4",
-    "linter": "git+https://github.com/TheraPackages/linter.git#v1.0.9",
+    "linter": "git+https://github.com/TheraPackages/linter.git#v1.1.0",
     "autocomplete-weex": "git+https://github.com/TheraPackages/autocomplete-weex.git#v0.1.1",
     "autocomplete-weexvue": "git+https://github.com/TheraPackages/autocomplete-weexvue.git#v0.1.3",
     "atom-notifier": "git+https://github.com/TheraPackages/notifier.git#v0.5.4",
