@@ -116,10 +116,8 @@ module.exports = class LinesTileComponent {
 
     const newLineIds = []
     const newLineNodes = []
-    // console.log("+++++++");
     if (this.lineTailManager.isChanged()) {
       this.removeLineNodes()
-      // console.log('...))((...');
     }
 
     for (const id of Object.keys(this.newTileState.lines)) {
@@ -223,7 +221,6 @@ module.exports = class LinesTileComponent {
     
     let objText = this.lineTailManager.getTextByLine(bufferRow)
     if (objText) {
-      console.log(objText);
       let {text, tipClass} = objText
       let tailNode = this.domElementPool.buildElement('span')
       tailNode.textContent = text
