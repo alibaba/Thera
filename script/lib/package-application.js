@@ -22,7 +22,7 @@ module.exports = function () {
     'app-copyright': `Copyright © 2014-${(new Date()).getFullYear()} GitHub, Inc. All rights reserved.`,
     'app-version': CONFIG.appMetadata.version,
     'arch': process.platform === 'darwin' ? 'x64' : process.arch, // OS X is 64-bit only
-    'asar': {unpack: buildAsarUnpackGlobExpression()},
+    //'asar': {unpack: buildAsarUnpackGlobExpression()},
     'build-version': CONFIG.appMetadata.version,
     'download': {cache: CONFIG.electronDownloadPath},
     'dir': CONFIG.intermediateAppPath,
@@ -54,9 +54,9 @@ module.exports = function () {
     // install attaching packages
     installAttachPackages(packagedAppPath, bundledResourcesPath)
 
-    copyAttachResources(packagedAppPath, bundledResourcesPath)
+    // copyAttachResources(packagedAppPath, bundledResourcesPath)
 
-    copyResourceInPackage(packagedAppPath, bundledResourcesPath)
+    // copyResourceInPackage(packagedAppPath, bundledResourcesPath)
 
     return copyNonASARResources(packagedAppPath, bundledResourcesPath).then(() => {
       console.log(`Application bundle created at ${packagedAppPath}`)
@@ -200,10 +200,10 @@ function copyNonASARResources (packagedAppPath, bundledResourcesPath) {
     {filter: includePathInPackagedApp}
   )
 
-  fs.copySync(
-    path.join(CONFIG.repositoryRootPath, 'package.json'),
-    path.join(path.join(bundledResourcesPath, 'package.json'))
-  )
+  // fs.copySync(
+  //   path.join(CONFIG.repositoryRootPath, 'package.json'),
+  //   path.join(path.join(bundledResourcesPath, 'package.json'))
+  // )
 
   if (process.platform !== 'win32') {
     // Existing symlinks on user systems point to an outdated path, so just symlink it to the real location of the apm binary.

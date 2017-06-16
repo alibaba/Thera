@@ -50,7 +50,8 @@ const EXCLUDE_REGEXPS_SOURCES = [
   escapeRegExp(path.join('vendor', 'apm')),
 
   // These are only required in dev-mode, when pegjs grammars aren't precompiled
-  escapeRegExp(path.join('node_modules', 'loophole')),
+  // atom-beautify dependent on loophole
+  // escapeRegExp(path.join('node_modules', 'loophole')),
   escapeRegExp(path.join('node_modules', 'pegjs')),
   escapeRegExp(path.join('node_modules', '.bin', 'pegjs')),
   escapeRegExp(path.join('node_modules', 'spellchecker', 'vendor', 'hunspell') + path.sep) + '.*',
