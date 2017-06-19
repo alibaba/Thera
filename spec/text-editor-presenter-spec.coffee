@@ -19,7 +19,7 @@ describe "TextEditorPresenter", ->
       spyOn(window, "clearInterval").andCallFake window.fakeClearInterval
 
       buffer = new TextBuffer(filePath: require.resolve('./fixtures/sample.js'))
-      editor = atom.workspace.buildTextEditor({buffer})
+      editor = new TextEditor({buffer})
       waitsForPromise -> buffer.load()
 
     afterEach ->
@@ -163,23 +163,6 @@ describe "TextEditorPresenter", ->
         expect(stateFn(presenter).tiles[6]).toBeDefined()
         expect(stateFn(presenter).tiles[8]).toBeDefined()
         expect(stateFn(presenter).tiles[10]).toBeUndefined()
-        expect(stateFn(presenter).tiles[12]).toBeUndefined()
-
-      it "excludes invalid tiles for screen rows to measure", ->
-        presenter = buildPresenter(explicitHeight: 6, scrollTop: 0, lineHeight: 1, tileSize: 2)
-        presenter.setScreenRowsToMeasure([20, 30]) # unexisting rows
-
-        expect(stateFn(presenter).tiles[0]).toBeDefined()
-        expect(stateFn(presenter).tiles[2]).toBeDefined()
-        expect(stateFn(presenter).tiles[4]).toBeDefined()
-        expect(stateFn(presenter).tiles[6]).toBeDefined()
-        expect(stateFn(presenter).tiles[8]).toBeUndefined()
-        expect(stateFn(presenter).tiles[10]).toBeUndefined()
-        expect(stateFn(presenter).tiles[12]).toBeUndefined()
-
-        presenter.setScreenRowsToMeasure([12])
-        buffer.deleteRows(12, 13)
-
         expect(stateFn(presenter).tiles[12]).toBeUndefined()
 
       describe "when there are block decorations", ->
@@ -475,12 +458,13 @@ describe "TextEditorPresenter", ->
           waitsForPromise -> atom.packages.activatePackage('language-javascript')
 
           runs ->
+            editor.setGrammar(atom.grammars.grammarForScopeName('source.js'))
             maxLineLength = editor.getMaxScreenLineLength()
             presenter = buildPresenter(contentFrameWidth: 50, baseCharacterWidth: 10)
 
             expect(getState(presenter).horizontalScrollbar.scrollWidth).toBe 10 * maxLineLength + 1
             expectStateUpdate presenter, ->
-              presenter.getLinesYardstick().setScopedCharacterWidth(['source.js', 'meta.method-call.js', 'support.function.js'], 'p', 20)
+              presenter.getLinesYardstick().setScopedCharacterWidth(['syntax--source.syntax--js', 'syntax--meta.syntax--method-call.syntax--js', 'syntax--support.syntax--function.syntax--js'], 'p', 20)
               presenter.measurementsChanged()
             expect(getState(presenter).horizontalScrollbar.scrollWidth).toBe (10 * (maxLineLength - 2)) + (20 * 2) + 1 # 2 of the characters are 20px wide now instead of 10px wide
 
@@ -759,6 +743,7 @@ describe "TextEditorPresenter", ->
           waitsForPromise -> atom.packages.activatePackage('language-javascript')
 
           runs ->
+            editor.setGrammar(atom.grammars.grammarForScopeName('source.js'))
             editor.setCursorBufferPosition([3, 6])
             presenter = buildPresenter()
             expect(getState(presenter).hiddenInput.width).toBe 10
@@ -767,7 +752,7 @@ describe "TextEditorPresenter", ->
             expect(getState(presenter).hiddenInput.width).toBe 15
 
             expectStateUpdate presenter, ->
-              presenter.getLinesYardstick().setScopedCharacterWidth(['source.js', 'storage.type.var.js'], 'r', 20)
+              presenter.getLinesYardstick().setScopedCharacterWidth(['syntax--source.syntax--js', 'syntax--storage.syntax--type.syntax--var.syntax--js'], 'r', 20)
               presenter.measurementsChanged()
             expect(getState(presenter).hiddenInput.width).toBe 20
 
@@ -918,12 +903,13 @@ describe "TextEditorPresenter", ->
           waitsForPromise -> atom.packages.activatePackage('language-javascript')
 
           runs ->
+            editor.setGrammar(atom.grammars.grammarForScopeName('source.js'))
             maxLineLength = editor.getMaxScreenLineLength()
             presenter = buildPresenter(contentFrameWidth: 50, baseCharacterWidth: 10)
 
             expect(getState(presenter).content.scrollWidth).toBe 10 * maxLineLength + 1
             expectStateUpdate presenter, ->
-              presenter.getLinesYardstick().setScopedCharacterWidth(['source.js', 'meta.method-call.js', 'support.function.js'], 'p', 20)
+              presenter.getLinesYardstick().setScopedCharacterWidth(['syntax--source.syntax--js', 'syntax--meta.syntax--method-call.syntax--js', 'syntax--support.syntax--function.syntax--js'], 'p', 20)
               presenter.measurementsChanged()
             expect(getState(presenter).content.scrollWidth).toBe (10 * (maxLineLength - 2)) + (20 * 2) + 1 # 2 of the characters are 20px wide now instead of 10px wide
 
@@ -1265,6 +1251,8 @@ describe "TextEditorPresenter", ->
             expectValues lineStateForScreenRow(presenter, 3), {screenRow: 3, tagCodes: editor.screenLineForScreenRow(3).tagCodes}
 
           it "includes the .endOfLineInvisibles if the editor.showInvisibles config option is true", ->
+            editor.update({showInvisibles: false, invisibles: {eol: 'X'}})
+
             editor.setText("hello\nworld\r\n")
             presenter = buildPresenter(explicitHeight: 25, scrollTop: 0, lineHeight: 10)
             expect(tagsForCodes(presenter, lineStateForScreenRow(presenter, 0).tagCodes).openTags).not.toContain('invisible-character eol')
@@ -1275,7 +1263,16 @@ describe "TextEditorPresenter", ->
             expect(tagsForCodes(presenter, lineStateForScreenRow(presenter, 0).tagCodes).openTags).toContain('invisible-character eol')
             expect(tagsForCodes(presenter, lineStateForScreenRow(presenter, 1).tagCodes).openTags).toContain('invisible-character eol')
 
-          describe ".blockDecorations", ->
+          describe ".{preceding,following}BlockDecorations", ->
+            stateForBlockDecorations = (blockDecorations) ->
+              state = {}
+              for blockDecoration in blockDecorations
+                state[blockDecoration.id] = {
+                  decoration: blockDecoration,
+                  screenRow: blockDecoration.getMarker().getHeadScreenPosition().row
+                }
+              state
+
             it "contains all block decorations that are present before/after a line, both initially and when decorations change", ->
               blockDecoration1 = addBlockDecorationBeforeScreenRow(0)
               presenter = buildPresenter()
@@ -1287,32 +1284,32 @@ describe "TextEditorPresenter", ->
                 blockDecoration4 = addBlockDecorationAfterScreenRow(7)
 
               runs ->
-                expect(lineStateForScreenRow(presenter, 0).precedingBlockDecorations).toEqual([blockDecoration1])
-                expect(lineStateForScreenRow(presenter, 0).followingBlockDecorations).toEqual([])
-                expect(lineStateForScreenRow(presenter, 1).precedingBlockDecorations).toEqual([])
-                expect(lineStateForScreenRow(presenter, 1).followingBlockDecorations).toEqual([])
-                expect(lineStateForScreenRow(presenter, 2).precedingBlockDecorations).toEqual([])
-                expect(lineStateForScreenRow(presenter, 2).followingBlockDecorations).toEqual([])
-                expect(lineStateForScreenRow(presenter, 3).precedingBlockDecorations).toEqual([blockDecoration2])
-                expect(lineStateForScreenRow(presenter, 3).followingBlockDecorations).toEqual([])
-                expect(lineStateForScreenRow(presenter, 4).precedingBlockDecorations).toEqual([])
-                expect(lineStateForScreenRow(presenter, 4).followingBlockDecorations).toEqual([])
-                expect(lineStateForScreenRow(presenter, 5).precedingBlockDecorations).toEqual([])
-                expect(lineStateForScreenRow(presenter, 5).followingBlockDecorations).toEqual([])
-                expect(lineStateForScreenRow(presenter, 6).precedingBlockDecorations).toEqual([])
-                expect(lineStateForScreenRow(presenter, 6).followingBlockDecorations).toEqual([])
-                expect(lineStateForScreenRow(presenter, 7).precedingBlockDecorations).toEqual([blockDecoration3])
-                expect(lineStateForScreenRow(presenter, 7).followingBlockDecorations).toEqual([blockDecoration4])
-                expect(lineStateForScreenRow(presenter, 8).precedingBlockDecorations).toEqual([])
-                expect(lineStateForScreenRow(presenter, 8).followingBlockDecorations).toEqual([])
-                expect(lineStateForScreenRow(presenter, 9).precedingBlockDecorations).toEqual([])
-                expect(lineStateForScreenRow(presenter, 9).followingBlockDecorations).toEqual([])
-                expect(lineStateForScreenRow(presenter, 10).precedingBlockDecorations).toEqual([])
-                expect(lineStateForScreenRow(presenter, 10).followingBlockDecorations).toEqual([])
-                expect(lineStateForScreenRow(presenter, 11).precedingBlockDecorations).toEqual([])
-                expect(lineStateForScreenRow(presenter, 11).followingBlockDecorations).toEqual([])
-                expect(lineStateForScreenRow(presenter, 12).precedingBlockDecorations).toEqual([])
-                expect(lineStateForScreenRow(presenter, 12).followingBlockDecorations).toEqual([])
+                expect(lineStateForScreenRow(presenter, 0).precedingBlockDecorations).toEqual(stateForBlockDecorations([blockDecoration1]))
+                expect(lineStateForScreenRow(presenter, 0).followingBlockDecorations).toEqual({})
+                expect(lineStateForScreenRow(presenter, 1).precedingBlockDecorations).toEqual({})
+                expect(lineStateForScreenRow(presenter, 1).followingBlockDecorations).toEqual({})
+                expect(lineStateForScreenRow(presenter, 2).precedingBlockDecorations).toEqual({})
+                expect(lineStateForScreenRow(presenter, 2).followingBlockDecorations).toEqual({})
+                expect(lineStateForScreenRow(presenter, 3).precedingBlockDecorations).toEqual(stateForBlockDecorations([blockDecoration2]))
+                expect(lineStateForScreenRow(presenter, 3).followingBlockDecorations).toEqual({})
+                expect(lineStateForScreenRow(presenter, 4).precedingBlockDecorations).toEqual({})
+                expect(lineStateForScreenRow(presenter, 4).followingBlockDecorations).toEqual({})
+                expect(lineStateForScreenRow(presenter, 5).precedingBlockDecorations).toEqual({})
+                expect(lineStateForScreenRow(presenter, 5).followingBlockDecorations).toEqual({})
+                expect(lineStateForScreenRow(presenter, 6).precedingBlockDecorations).toEqual({})
+                expect(lineStateForScreenRow(presenter, 6).followingBlockDecorations).toEqual({})
+                expect(lineStateForScreenRow(presenter, 7).precedingBlockDecorations).toEqual(stateForBlockDecorations([blockDecoration3]))
+                expect(lineStateForScreenRow(presenter, 7).followingBlockDecorations).toEqual(stateForBlockDecorations([blockDecoration4]))
+                expect(lineStateForScreenRow(presenter, 8).precedingBlockDecorations).toEqual({})
+                expect(lineStateForScreenRow(presenter, 8).followingBlockDecorations).toEqual({})
+                expect(lineStateForScreenRow(presenter, 9).precedingBlockDecorations).toEqual({})
+                expect(lineStateForScreenRow(presenter, 9).followingBlockDecorations).toEqual({})
+                expect(lineStateForScreenRow(presenter, 10).precedingBlockDecorations).toEqual({})
+                expect(lineStateForScreenRow(presenter, 10).followingBlockDecorations).toEqual({})
+                expect(lineStateForScreenRow(presenter, 11).precedingBlockDecorations).toEqual({})
+                expect(lineStateForScreenRow(presenter, 11).followingBlockDecorations).toEqual({})
+                expect(lineStateForScreenRow(presenter, 12).precedingBlockDecorations).toEqual({})
+                expect(lineStateForScreenRow(presenter, 12).followingBlockDecorations).toEqual({})
 
               waitsForStateToUpdate presenter, ->
                 blockDecoration1.getMarker().setHeadBufferPosition([1, 0])
@@ -1321,32 +1318,32 @@ describe "TextEditorPresenter", ->
                 blockDecoration4.getMarker().setHeadBufferPosition([8, 0])
 
               runs ->
-                expect(lineStateForScreenRow(presenter, 0).precedingBlockDecorations).toEqual([])
-                expect(lineStateForScreenRow(presenter, 0).followingBlockDecorations).toEqual([])
-                expect(lineStateForScreenRow(presenter, 1).precedingBlockDecorations).toEqual([blockDecoration1])
-                expect(lineStateForScreenRow(presenter, 1).followingBlockDecorations).toEqual([])
-                expect(lineStateForScreenRow(presenter, 2).precedingBlockDecorations).toEqual([])
-                expect(lineStateForScreenRow(presenter, 2).followingBlockDecorations).toEqual([])
-                expect(lineStateForScreenRow(presenter, 3).precedingBlockDecorations).toEqual([])
-                expect(lineStateForScreenRow(presenter, 3).followingBlockDecorations).toEqual([])
-                expect(lineStateForScreenRow(presenter, 4).precedingBlockDecorations).toEqual([])
-                expect(lineStateForScreenRow(presenter, 4).followingBlockDecorations).toEqual([])
-                expect(lineStateForScreenRow(presenter, 5).precedingBlockDecorations).toEqual([])
-                expect(lineStateForScreenRow(presenter, 5).followingBlockDecorations).toEqual([])
-                expect(lineStateForScreenRow(presenter, 6).precedingBlockDecorations).toEqual([])
-                expect(lineStateForScreenRow(presenter, 6).followingBlockDecorations).toEqual([])
-                expect(lineStateForScreenRow(presenter, 7).precedingBlockDecorations).toEqual([])
-                expect(lineStateForScreenRow(presenter, 7).followingBlockDecorations).toEqual([])
-                expect(lineStateForScreenRow(presenter, 8).precedingBlockDecorations).toEqual([])
-                expect(lineStateForScreenRow(presenter, 8).followingBlockDecorations).toEqual([blockDecoration4])
-                expect(lineStateForScreenRow(presenter, 9).precedingBlockDecorations).toEqual([blockDecoration2, blockDecoration3])
-                expect(lineStateForScreenRow(presenter, 9).followingBlockDecorations).toEqual([])
-                expect(lineStateForScreenRow(presenter, 10).precedingBlockDecorations).toEqual([])
-                expect(lineStateForScreenRow(presenter, 10).followingBlockDecorations).toEqual([])
-                expect(lineStateForScreenRow(presenter, 11).precedingBlockDecorations).toEqual([])
-                expect(lineStateForScreenRow(presenter, 11).followingBlockDecorations).toEqual([])
-                expect(lineStateForScreenRow(presenter, 12).precedingBlockDecorations).toEqual([])
-                expect(lineStateForScreenRow(presenter, 12).followingBlockDecorations).toEqual([])
+                expect(lineStateForScreenRow(presenter, 0).precedingBlockDecorations).toEqual({})
+                expect(lineStateForScreenRow(presenter, 0).followingBlockDecorations).toEqual({})
+                expect(lineStateForScreenRow(presenter, 1).precedingBlockDecorations).toEqual(stateForBlockDecorations([blockDecoration1]))
+                expect(lineStateForScreenRow(presenter, 1).followingBlockDecorations).toEqual({})
+                expect(lineStateForScreenRow(presenter, 2).precedingBlockDecorations).toEqual({})
+                expect(lineStateForScreenRow(presenter, 2).followingBlockDecorations).toEqual({})
+                expect(lineStateForScreenRow(presenter, 3).precedingBlockDecorations).toEqual({})
+                expect(lineStateForScreenRow(presenter, 3).followingBlockDecorations).toEqual({})
+                expect(lineStateForScreenRow(presenter, 4).precedingBlockDecorations).toEqual({})
+                expect(lineStateForScreenRow(presenter, 4).followingBlockDecorations).toEqual({})
+                expect(lineStateForScreenRow(presenter, 5).precedingBlockDecorations).toEqual({})
+                expect(lineStateForScreenRow(presenter, 5).followingBlockDecorations).toEqual({})
+                expect(lineStateForScreenRow(presenter, 6).precedingBlockDecorations).toEqual({})
+                expect(lineStateForScreenRow(presenter, 6).followingBlockDecorations).toEqual({})
+                expect(lineStateForScreenRow(presenter, 7).precedingBlockDecorations).toEqual({})
+                expect(lineStateForScreenRow(presenter, 7).followingBlockDecorations).toEqual({})
+                expect(lineStateForScreenRow(presenter, 8).precedingBlockDecorations).toEqual({})
+                expect(lineStateForScreenRow(presenter, 8).followingBlockDecorations).toEqual(stateForBlockDecorations([blockDecoration4]))
+                expect(lineStateForScreenRow(presenter, 9).precedingBlockDecorations).toEqual(stateForBlockDecorations([blockDecoration2, blockDecoration3]))
+                expect(lineStateForScreenRow(presenter, 9).followingBlockDecorations).toEqual({})
+                expect(lineStateForScreenRow(presenter, 10).precedingBlockDecorations).toEqual({})
+                expect(lineStateForScreenRow(presenter, 10).followingBlockDecorations).toEqual({})
+                expect(lineStateForScreenRow(presenter, 11).precedingBlockDecorations).toEqual({})
+                expect(lineStateForScreenRow(presenter, 11).followingBlockDecorations).toEqual({})
+                expect(lineStateForScreenRow(presenter, 12).precedingBlockDecorations).toEqual({})
+                expect(lineStateForScreenRow(presenter, 12).followingBlockDecorations).toEqual({})
 
               waitsForStateToUpdate presenter, ->
                 blockDecoration4.destroy()
@@ -1354,71 +1351,85 @@ describe "TextEditorPresenter", ->
                 blockDecoration1.getMarker().setHeadBufferPosition([0, 0])
 
               runs ->
-                expect(lineStateForScreenRow(presenter, 0).precedingBlockDecorations).toEqual([blockDecoration1])
-                expect(lineStateForScreenRow(presenter, 0).followingBlockDecorations).toEqual([])
-                expect(lineStateForScreenRow(presenter, 1).precedingBlockDecorations).toEqual([])
-                expect(lineStateForScreenRow(presenter, 1).followingBlockDecorations).toEqual([])
-                expect(lineStateForScreenRow(presenter, 2).precedingBlockDecorations).toEqual([])
-                expect(lineStateForScreenRow(presenter, 2).followingBlockDecorations).toEqual([])
-                expect(lineStateForScreenRow(presenter, 3).precedingBlockDecorations).toEqual([])
-                expect(lineStateForScreenRow(presenter, 3).followingBlockDecorations).toEqual([])
-                expect(lineStateForScreenRow(presenter, 4).precedingBlockDecorations).toEqual([])
-                expect(lineStateForScreenRow(presenter, 4).followingBlockDecorations).toEqual([])
-                expect(lineStateForScreenRow(presenter, 5).precedingBlockDecorations).toEqual([])
-                expect(lineStateForScreenRow(presenter, 5).followingBlockDecorations).toEqual([])
-                expect(lineStateForScreenRow(presenter, 6).precedingBlockDecorations).toEqual([])
-                expect(lineStateForScreenRow(presenter, 6).followingBlockDecorations).toEqual([])
-                expect(lineStateForScreenRow(presenter, 7).precedingBlockDecorations).toEqual([])
-                expect(lineStateForScreenRow(presenter, 7).followingBlockDecorations).toEqual([])
-                expect(lineStateForScreenRow(presenter, 8).precedingBlockDecorations).toEqual([])
-                expect(lineStateForScreenRow(presenter, 8).followingBlockDecorations).toEqual([])
-                expect(lineStateForScreenRow(presenter, 9).precedingBlockDecorations).toEqual([blockDecoration2])
-                expect(lineStateForScreenRow(presenter, 9).followingBlockDecorations).toEqual([])
-                expect(lineStateForScreenRow(presenter, 10).precedingBlockDecorations).toEqual([])
-                expect(lineStateForScreenRow(presenter, 10).followingBlockDecorations).toEqual([])
-                expect(lineStateForScreenRow(presenter, 11).precedingBlockDecorations).toEqual([])
-                expect(lineStateForScreenRow(presenter, 11).followingBlockDecorations).toEqual([])
-                expect(lineStateForScreenRow(presenter, 12).precedingBlockDecorations).toEqual([])
-                expect(lineStateForScreenRow(presenter, 12).followingBlockDecorations).toEqual([])
+                expect(lineStateForScreenRow(presenter, 0).precedingBlockDecorations).toEqual(stateForBlockDecorations([blockDecoration1]))
+                expect(lineStateForScreenRow(presenter, 0).followingBlockDecorations).toEqual({})
+                expect(lineStateForScreenRow(presenter, 1).precedingBlockDecorations).toEqual({})
+                expect(lineStateForScreenRow(presenter, 1).followingBlockDecorations).toEqual({})
+                expect(lineStateForScreenRow(presenter, 2).precedingBlockDecorations).toEqual({})
+                expect(lineStateForScreenRow(presenter, 2).followingBlockDecorations).toEqual({})
+                expect(lineStateForScreenRow(presenter, 3).precedingBlockDecorations).toEqual({})
+                expect(lineStateForScreenRow(presenter, 3).followingBlockDecorations).toEqual({})
+                expect(lineStateForScreenRow(presenter, 4).precedingBlockDecorations).toEqual({})
+                expect(lineStateForScreenRow(presenter, 4).followingBlockDecorations).toEqual({})
+                expect(lineStateForScreenRow(presenter, 5).precedingBlockDecorations).toEqual({})
+                expect(lineStateForScreenRow(presenter, 5).followingBlockDecorations).toEqual({})
+                expect(lineStateForScreenRow(presenter, 6).precedingBlockDecorations).toEqual({})
+                expect(lineStateForScreenRow(presenter, 6).followingBlockDecorations).toEqual({})
+                expect(lineStateForScreenRow(presenter, 7).precedingBlockDecorations).toEqual({})
+                expect(lineStateForScreenRow(presenter, 7).followingBlockDecorations).toEqual({})
+                expect(lineStateForScreenRow(presenter, 8).precedingBlockDecorations).toEqual({})
+                expect(lineStateForScreenRow(presenter, 8).followingBlockDecorations).toEqual({})
+                expect(lineStateForScreenRow(presenter, 9).precedingBlockDecorations).toEqual(stateForBlockDecorations([blockDecoration2]))
+                expect(lineStateForScreenRow(presenter, 9).followingBlockDecorations).toEqual({})
+                expect(lineStateForScreenRow(presenter, 10).precedingBlockDecorations).toEqual({})
+                expect(lineStateForScreenRow(presenter, 10).followingBlockDecorations).toEqual({})
+                expect(lineStateForScreenRow(presenter, 11).precedingBlockDecorations).toEqual({})
+                expect(lineStateForScreenRow(presenter, 11).followingBlockDecorations).toEqual({})
+                expect(lineStateForScreenRow(presenter, 12).precedingBlockDecorations).toEqual({})
+                expect(lineStateForScreenRow(presenter, 12).followingBlockDecorations).toEqual({})
 
               waitsForStateToUpdate presenter, ->
                 editor.setCursorBufferPosition([0, 0])
                 editor.insertNewline()
 
               runs ->
-                expect(lineStateForScreenRow(presenter, 0).precedingBlockDecorations).toEqual([])
-                expect(lineStateForScreenRow(presenter, 0).followingBlockDecorations).toEqual([])
-                expect(lineStateForScreenRow(presenter, 1).precedingBlockDecorations).toEqual([blockDecoration1])
-                expect(lineStateForScreenRow(presenter, 1).followingBlockDecorations).toEqual([])
-                expect(lineStateForScreenRow(presenter, 2).precedingBlockDecorations).toEqual([])
-                expect(lineStateForScreenRow(presenter, 2).followingBlockDecorations).toEqual([])
-                expect(lineStateForScreenRow(presenter, 3).precedingBlockDecorations).toEqual([])
-                expect(lineStateForScreenRow(presenter, 3).followingBlockDecorations).toEqual([])
-                expect(lineStateForScreenRow(presenter, 4).precedingBlockDecorations).toEqual([])
-                expect(lineStateForScreenRow(presenter, 4).followingBlockDecorations).toEqual([])
-                expect(lineStateForScreenRow(presenter, 5).precedingBlockDecorations).toEqual([])
-                expect(lineStateForScreenRow(presenter, 5).followingBlockDecorations).toEqual([])
-                expect(lineStateForScreenRow(presenter, 6).precedingBlockDecorations).toEqual([])
-                expect(lineStateForScreenRow(presenter, 6).followingBlockDecorations).toEqual([])
-                expect(lineStateForScreenRow(presenter, 7).precedingBlockDecorations).toEqual([])
-                expect(lineStateForScreenRow(presenter, 7).followingBlockDecorations).toEqual([])
-                expect(lineStateForScreenRow(presenter, 8).precedingBlockDecorations).toEqual([])
-                expect(lineStateForScreenRow(presenter, 8).followingBlockDecorations).toEqual([])
-                expect(lineStateForScreenRow(presenter, 9).precedingBlockDecorations).toEqual([])
-                expect(lineStateForScreenRow(presenter, 9).followingBlockDecorations).toEqual([])
-                expect(lineStateForScreenRow(presenter, 10).precedingBlockDecorations).toEqual([blockDecoration2])
-                expect(lineStateForScreenRow(presenter, 10).followingBlockDecorations).toEqual([])
-                expect(lineStateForScreenRow(presenter, 11).precedingBlockDecorations).toEqual([])
-                expect(lineStateForScreenRow(presenter, 11).followingBlockDecorations).toEqual([])
-                expect(lineStateForScreenRow(presenter, 12).precedingBlockDecorations).toEqual([])
-                expect(lineStateForScreenRow(presenter, 12).followingBlockDecorations).toEqual([])
+                expect(lineStateForScreenRow(presenter, 0).precedingBlockDecorations).toEqual({})
+                expect(lineStateForScreenRow(presenter, 0).followingBlockDecorations).toEqual({})
+                expect(lineStateForScreenRow(presenter, 1).precedingBlockDecorations).toEqual(stateForBlockDecorations([blockDecoration1]))
+                expect(lineStateForScreenRow(presenter, 1).followingBlockDecorations).toEqual({})
+                expect(lineStateForScreenRow(presenter, 2).precedingBlockDecorations).toEqual({})
+                expect(lineStateForScreenRow(presenter, 2).followingBlockDecorations).toEqual({})
+                expect(lineStateForScreenRow(presenter, 3).precedingBlockDecorations).toEqual({})
+                expect(lineStateForScreenRow(presenter, 3).followingBlockDecorations).toEqual({})
+                expect(lineStateForScreenRow(presenter, 4).precedingBlockDecorations).toEqual({})
+                expect(lineStateForScreenRow(presenter, 4).followingBlockDecorations).toEqual({})
+                expect(lineStateForScreenRow(presenter, 5).precedingBlockDecorations).toEqual({})
+                expect(lineStateForScreenRow(presenter, 5).followingBlockDecorations).toEqual({})
+                expect(lineStateForScreenRow(presenter, 6).precedingBlockDecorations).toEqual({})
+                expect(lineStateForScreenRow(presenter, 6).followingBlockDecorations).toEqual({})
+                expect(lineStateForScreenRow(presenter, 7).precedingBlockDecorations).toEqual({})
+                expect(lineStateForScreenRow(presenter, 7).followingBlockDecorations).toEqual({})
+                expect(lineStateForScreenRow(presenter, 8).precedingBlockDecorations).toEqual({})
+                expect(lineStateForScreenRow(presenter, 8).followingBlockDecorations).toEqual({})
+                expect(lineStateForScreenRow(presenter, 9).precedingBlockDecorations).toEqual({})
+                expect(lineStateForScreenRow(presenter, 9).followingBlockDecorations).toEqual({})
+                expect(lineStateForScreenRow(presenter, 10).precedingBlockDecorations).toEqual(stateForBlockDecorations([blockDecoration2]))
+                expect(lineStateForScreenRow(presenter, 10).followingBlockDecorations).toEqual({})
+                expect(lineStateForScreenRow(presenter, 11).precedingBlockDecorations).toEqual({})
+                expect(lineStateForScreenRow(presenter, 11).followingBlockDecorations).toEqual({})
+                expect(lineStateForScreenRow(presenter, 12).precedingBlockDecorations).toEqual({})
+                expect(lineStateForScreenRow(presenter, 12).followingBlockDecorations).toEqual({})
 
-            it "inserts block decorations before the line if not specified otherwise", ->
+            it "contains block decorations located in ::mouseWheelScreenRow even if they are off screen", ->
+              blockDecoration = addBlockDecorationBeforeScreenRow(0)
+              presenter = buildPresenter(explicitHeight: 6, scrollTop: 0, lineHeight: 1, tileSize: 2, stoppedScrollingDelay: 200)
+              lineId = presenter.displayLayer.getScreenLines(0, 1)[0].id
+
+              expect(getState(presenter).content.tiles[0].lines[lineId].precedingBlockDecorations).toEqual(stateForBlockDecorations([blockDecoration]))
+
+              presenter.setMouseWheelScreenRow(0)
+              expectStateUpdate presenter, -> presenter.setScrollTop(4)
+              expect(getState(presenter).content.tiles[0].lines[lineId].precedingBlockDecorations).toEqual(stateForBlockDecorations([blockDecoration]))
+
+              advanceClock(presenter.stoppedScrollingDelay)
+              expect(getState(presenter).content.tiles[0]).toBeUndefined()
+
+            it "inserts block decorations before the line unless otherwise specified", ->
               blockDecoration = editor.decorateMarker(editor.markScreenPosition([4, 0]), {type: "block"})
               presenter = buildPresenter()
 
-              expect(lineStateForScreenRow(presenter, 4).precedingBlockDecorations).toEqual [blockDecoration]
-              expect(lineStateForScreenRow(presenter, 4).followingBlockDecorations).toEqual []
+              expect(lineStateForScreenRow(presenter, 4).precedingBlockDecorations).toEqual stateForBlockDecorations([blockDecoration])
+              expect(lineStateForScreenRow(presenter, 4).followingBlockDecorations).toEqual {}
 
           describe ".decorationClasses", ->
             it "adds decoration classes to the relevant line state objects, both initially and when decorations change", ->
@@ -1572,6 +1583,7 @@ describe "TextEditorPresenter", ->
           getState(presenter).content.cursors[presenter.model.getCursors()[cursorIndex].id]
 
         it "contains pixelRects for empty selections that are visible on screen", ->
+          editor.update({showCursorOnSelection: false})
           editor.setSelectedBufferRanges([
             [[1, 2], [1, 2]],
             [[2, 4], [2, 4]],
@@ -1616,6 +1628,7 @@ describe "TextEditorPresenter", ->
           expect(getState(presenter).content.cursors).not.toEqual({})
 
         it "updates when block decorations change", ->
+          editor.update({showCursorOnSelection: false})
           editor.setSelectedBufferRanges([
             [[1, 2], [1, 2]],
             [[2, 4], [2, 4]],
@@ -1693,6 +1706,7 @@ describe "TextEditorPresenter", ->
           expect(stateForCursor(presenter, 0)).toEqual {top: 20, left: 10 * 22, width: 10, height: 10}
 
         it "updates when ::explicitHeight changes", ->
+          editor.update({showCursorOnSelection: false})
           editor.setSelectedBufferRanges([
             [[1, 2], [1, 2]],
             [[2, 4], [2, 4]],
@@ -1731,20 +1745,22 @@ describe "TextEditorPresenter", ->
             atom.packages.activatePackage('language-javascript')
 
           runs ->
+            editor.setGrammar(atom.grammars.grammarForScopeName('source.js'))
             editor.setCursorBufferPosition([1, 4])
             presenter = buildPresenter(explicitHeight: 20)
 
             expectStateUpdate presenter, ->
-              presenter.getLinesYardstick().setScopedCharacterWidth(['source.js', 'storage.type.var.js'], 'v', 20)
+              presenter.getLinesYardstick().setScopedCharacterWidth(['syntax--source.syntax--js', 'syntax--storage.syntax--type.syntax--var.syntax--js'], 'v', 20)
               presenter.measurementsChanged()
             expect(stateForCursor(presenter, 0)).toEqual {top: 1 * 10, left: (3 * 10) + 20, width: 10, height: 10}
 
             expectStateUpdate presenter, ->
-              presenter.getLinesYardstick().setScopedCharacterWidth(['source.js', 'storage.type.var.js'], 'r', 20)
+              presenter.getLinesYardstick().setScopedCharacterWidth(['syntax--source.syntax--js', 'syntax--storage.syntax--type.syntax--var.syntax--js'], 'r', 20)
               presenter.measurementsChanged()
             expect(stateForCursor(presenter, 0)).toEqual {top: 1 * 10, left: (3 * 10) + 20, width: 20, height: 10}
 
         it "updates when cursors are added, moved, hidden, shown, or destroyed", ->
+          editor.update({showCursorOnSelection: false})
           editor.setSelectedBufferRanges([
             [[1, 2], [1, 2]],
             [[3, 4], [3, 5]]
@@ -1848,7 +1864,7 @@ describe "TextEditorPresenter", ->
 
       describe ".highlights", ->
         expectUndefinedStateForHighlight = (presenter, decoration) ->
-          for tileId, tileState of getState(presenter).content.tiles
+          for tileId of getState(presenter).content.tiles
             state = stateForHighlightInTile(presenter, decoration, tileId)
             expect(state).toBeUndefined()
 
@@ -1860,7 +1876,7 @@ describe "TextEditorPresenter", ->
           stateForHighlightInTile(presenter, selection.decoration, tile)
 
         expectUndefinedStateForSelection = (presenter, selectionIndex) ->
-          for tileId, tileState of getState(presenter).content.tiles
+          for tileId of getState(presenter).content.tiles
             state = stateForSelectionInTile(presenter, selectionIndex, tileId)
             expect(state).toBeUndefined()
 
@@ -2016,6 +2032,27 @@ describe "TextEditorPresenter", ->
 
           expect(stateForHighlightInTile(presenter, highlight, 0)).toBeUndefined()
 
+        it "handles highlights that extend to the left of the visible area (regression)", ->
+          editor.setSelectedBufferRanges([
+            [[0, 2], [1, 4]],
+          ])
+
+          presenter = buildPresenter(explicitHeight: 20, scrollLeft: 0, tileSize: 2)
+          expectValues stateForSelectionInTile(presenter, 0, 0), {
+            regions: [
+              {top: 0 * 10, height: 10, left: 2 * 10, right: 0 * 10},
+              {top: 1 * 10, height: 10, left: 0 * 10, width: 4 * 10}
+            ]
+          }
+
+          presenter = buildPresenter(explicitHeight: 20, scrollLeft: 20, tileSize: 2)
+          expectValues stateForSelectionInTile(presenter, 0, 0), {
+            regions: [
+              {top: 0 * 10, height: 10, left: 2 * 10, right: 0 * 10},
+              {top: 1 * 10, height: 10, left: 0 * 10, width: 4 * 10}
+            ]
+          }
+
         it "updates when ::scrollTop changes", ->
           editor.setSelectedBufferRanges([
             [[6, 2], [6, 4]],
@@ -2076,6 +2113,7 @@ describe "TextEditorPresenter", ->
             atom.packages.activatePackage('language-javascript')
 
           runs ->
+            editor.setGrammar(atom.grammars.grammarForScopeName('source.js'))
             editor.setSelectedBufferRanges([
               [[2, 4], [2, 6]],
             ])
@@ -2086,7 +2124,7 @@ describe "TextEditorPresenter", ->
               regions: [{top: 0, left: 4 * 10, width: 2 * 10, height: 10}]
             }
             expectStateUpdate presenter, ->
-              presenter.getLinesYardstick().setScopedCharacterWidth(['source.js', 'keyword.control.js'], 'i', 20)
+              presenter.getLinesYardstick().setScopedCharacterWidth(['syntax--source.syntax--js', 'syntax--keyword.syntax--control.syntax--js'], 'i', 20)
               presenter.measurementsChanged()
             expectValues stateForSelectionInTile(presenter, 0, 2), {
               regions: [{top: 0, left: 4 * 10, width: 20 + 10, height: 10}]
@@ -2147,7 +2185,7 @@ describe "TextEditorPresenter", ->
             editor.getSelections()[2].setBufferRange([[1, 4], [1, 8]], autoscroll: false)
           waitsForStateToUpdate presenter
 
-          destroyedSelection = null
+          [destroyedSelection, destroyedDecoration] = []
           runs ->
             expectValues stateForSelectionInTile(presenter, 2, 0), {
               regions: [{top: 10, left: 4 * 10, width: 4 * 10, height: 10}]
@@ -2155,10 +2193,11 @@ describe "TextEditorPresenter", ->
 
             # destroying
             destroyedSelection = editor.getSelections()[2]
+            destroyedDecoration = destroyedSelection.decoration
 
           waitsForStateToUpdate presenter, -> destroyedSelection.destroy()
           runs ->
-            expectUndefinedStateForHighlight(presenter, destroyedSelection.decoration)
+            expectUndefinedStateForHighlight(presenter, destroyedDecoration)
 
         it "updates when highlight decorations' properties are updated", ->
           marker = editor.markBufferPosition([2, 2])
@@ -2186,11 +2225,13 @@ describe "TextEditorPresenter", ->
             highlight.flash('b', 500)
           runs ->
             expectValues stateForHighlightInTile(presenter, highlight, 2), {
+              needsFlash: true
               flashClass: 'b'
               flashDuration: 500
               flashCount: 1
             }
             expectValues stateForHighlightInTile(presenter, highlight, 4), {
+              needsFlash: true
               flashClass: 'b'
               flashDuration: 500
               flashCount: 1
@@ -2199,232 +2240,129 @@ describe "TextEditorPresenter", ->
           waitsForStateToUpdate presenter, -> highlight.flash('c', 600)
           runs ->
             expectValues stateForHighlightInTile(presenter, highlight, 2), {
+              needsFlash: true
               flashClass: 'c'
               flashDuration: 600
               flashCount: 2
             }
             expectValues stateForHighlightInTile(presenter, highlight, 4), {
+              needsFlash: true
               flashClass: 'c'
               flashDuration: 600
               flashCount: 2
             }
 
-      describe ".blockDecorations", ->
-        stateForBlockDecoration = (presenter, decoration) ->
-          getState(presenter).content.blockDecorations[decoration.id]
+          waitsForStateToUpdate presenter, -> marker.setBufferRange([[2, 2], [6, 2]])
+          runs ->
+            expectValues stateForHighlightInTile(presenter, highlight, 2), {needsFlash: false}
+            expectValues stateForHighlightInTile(presenter, highlight, 4), {needsFlash: false}
 
-        it "contains state for measured block decorations that are not visible when they are on ::mouseWheelScreenRow", ->
-          blockDecoration1 = addBlockDecorationBeforeScreenRow(0)
-          presenter = buildPresenter(explicitHeight: 30, lineHeight: 10, tileSize: 2, scrollTop: 0, stoppedScrollingDelay: 200)
-          getState(presenter) # flush pending state
-          presenter.setBlockDecorationDimensions(blockDecoration1, 0, 0)
+      describe ".offScreenBlockDecorations", ->
+        stateForOffScreenBlockDecoration = (presenter, decoration) ->
+          getState(presenter).content.offScreenBlockDecorations[decoration.id]
 
-          presenter.setScrollTop(100)
-          presenter.setMouseWheelScreenRow(0)
-
-          expectValues stateForBlockDecoration(presenter, blockDecoration1), {
-            decoration: blockDecoration1
-            screenRow: 0
-            isVisible: true
-          }
-
-          advanceClock(presenter.stoppedScrollingDelay)
-
-          expect(stateForBlockDecoration(presenter, blockDecoration1)).toBeUndefined()
-
-        it "invalidates block decorations that intersect a change in the buffer", ->
-          blockDecoration1 = addBlockDecorationBeforeScreenRow(9)
-          blockDecoration2 = addBlockDecorationBeforeScreenRow(10)
-          blockDecoration3 = addBlockDecorationBeforeScreenRow(11)
-          presenter = buildPresenter(explicitHeight: 30, lineHeight: 10, tileSize: 2, scrollTop: 0)
-
-          expectValues stateForBlockDecoration(presenter, blockDecoration1), {
-            decoration: blockDecoration1
-            screenRow: 9
-            isVisible: false
-          }
-          expectValues stateForBlockDecoration(presenter, blockDecoration2), {
-            decoration: blockDecoration2
-            screenRow: 10
-            isVisible: false
-          }
-          expectValues stateForBlockDecoration(presenter, blockDecoration3), {
-            decoration: blockDecoration3
-            screenRow: 11
-            isVisible: false
-          }
-
-          presenter.setBlockDecorationDimensions(blockDecoration1, 0, 10)
-          presenter.setBlockDecorationDimensions(blockDecoration2, 0, 10)
-          presenter.setBlockDecorationDimensions(blockDecoration3, 0, 10)
-          expect(stateForBlockDecoration(presenter, blockDecoration1)).toBeUndefined()
-          expect(stateForBlockDecoration(presenter, blockDecoration2)).toBeUndefined()
-          expect(stateForBlockDecoration(presenter, blockDecoration3)).toBeUndefined()
-
-          editor.setSelectedScreenRange([[10, 0], [12, 0]])
-          editor.delete()
-          presenter.setScrollTop(0) # deleting the buffer causes the editor to autoscroll
-
-          expect(stateForBlockDecoration(presenter, blockDecoration1)).toBeUndefined()
-          expectValues stateForBlockDecoration(presenter, blockDecoration2), {
-            decoration: blockDecoration2
-            screenRow: 10
-            isVisible: false
-          }
-          expectValues stateForBlockDecoration(presenter, blockDecoration3), {
-            decoration: blockDecoration3
-            screenRow: 10
-            isVisible: false
-          }
-
-        it "invalidates all block decorations when content frame width, window size or bounding client rect change", ->
-          blockDecoration1 = addBlockDecorationBeforeScreenRow(11)
-          presenter = buildPresenter(explicitHeight: 30, lineHeight: 10, tileSize: 2, scrollTop: 0)
-
-          expectValues stateForBlockDecoration(presenter, blockDecoration1), {
-            decoration: blockDecoration1
-            screenRow: 11
-            isVisible: false
-          }
-
-          presenter.setBlockDecorationDimensions(blockDecoration1, 0, 10)
-          expect(stateForBlockDecoration(presenter, blockDecoration1)).toBeUndefined()
-
-          presenter.setBoundingClientRect({top: 0, left: 0, width: 50, height: 30})
-          expectValues stateForBlockDecoration(presenter, blockDecoration1), {
-            decoration: blockDecoration1
-            screenRow: 11
-            isVisible: false
-          }
-
-          presenter.setBlockDecorationDimensions(blockDecoration1, 0, 20)
-          expect(stateForBlockDecoration(presenter, blockDecoration1)).toBeUndefined()
-
-          presenter.setContentFrameWidth(100)
-          expectValues stateForBlockDecoration(presenter, blockDecoration1), {
-            decoration: blockDecoration1
-            screenRow: 11
-            isVisible: false
-          }
-
-          presenter.setBlockDecorationDimensions(blockDecoration1, 0, 20)
-          expect(stateForBlockDecoration(presenter, blockDecoration1)).toBeUndefined()
-
-          presenter.setWindowSize(100, 200)
-          expectValues stateForBlockDecoration(presenter, blockDecoration1), {
-            decoration: blockDecoration1
-            screenRow: 11
-            isVisible: false
-          }
-
-          presenter.setBlockDecorationDimensions(blockDecoration1, 0, 20)
-          expect(stateForBlockDecoration(presenter, blockDecoration1)).toBeUndefined()
-
-        it "contains state for on-screen and unmeasured block decorations, both initially and when they are updated or destroyed", ->
+        it "contains state for off-screen unmeasured block decorations, both initially and when they are updated or destroyed", ->
           item = {}
           blockDecoration1 = addBlockDecorationBeforeScreenRow(0, item)
           blockDecoration2 = addBlockDecorationBeforeScreenRow(4, item)
           blockDecoration3 = addBlockDecorationBeforeScreenRow(4, item)
           blockDecoration4 = addBlockDecorationBeforeScreenRow(10, item)
           presenter = buildPresenter(explicitHeight: 30, lineHeight: 10, tileSize: 2, scrollTop: 0)
-
-          expectValues stateForBlockDecoration(presenter, blockDecoration1), {
-            decoration: blockDecoration1
-            screenRow: 0
-            isVisible: true
-          }
-          expectValues stateForBlockDecoration(presenter, blockDecoration2), {
-            decoration: blockDecoration2
-            screenRow: 4
-            isVisible: true
-          }
-          expectValues stateForBlockDecoration(presenter, blockDecoration3), {
-            decoration: blockDecoration3
-            screenRow: 4
-            isVisible: true
-          }
-          expectValues stateForBlockDecoration(presenter, blockDecoration4), {
-            decoration: blockDecoration4
-            screenRow: 10
-            isVisible: false
-          }
+          expect(stateForOffScreenBlockDecoration(presenter, blockDecoration1)).toBeUndefined()
+          expect(stateForOffScreenBlockDecoration(presenter, blockDecoration2)).toBeUndefined()
+          expect(stateForOffScreenBlockDecoration(presenter, blockDecoration3)).toBeUndefined()
+          expect(stateForOffScreenBlockDecoration(presenter, blockDecoration4)).toBe(blockDecoration4)
 
           presenter.setBlockDecorationDimensions(blockDecoration1, 0, 10)
           presenter.setBlockDecorationDimensions(blockDecoration4, 0, 20)
-
-          expectValues stateForBlockDecoration(presenter, blockDecoration1), {
-            decoration: blockDecoration1
-            screenRow: 0
-            isVisible: true
-          }
-          expectValues stateForBlockDecoration(presenter, blockDecoration2), {
-            decoration: blockDecoration2
-            screenRow: 4
-            isVisible: false
-          }
-          expectValues stateForBlockDecoration(presenter, blockDecoration3), {
-            decoration: blockDecoration3
-            screenRow: 4
-            isVisible: false
-          }
-          expect(stateForBlockDecoration(presenter, blockDecoration4)).toBeUndefined()
-
-          blockDecoration3.getMarker().setHeadScreenPosition([5, 0])
-          presenter.setScrollTop(90)
-
-          expect(stateForBlockDecoration(presenter, blockDecoration1)).toBeUndefined()
-          expectValues stateForBlockDecoration(presenter, blockDecoration2), {
-            decoration: blockDecoration2
-            screenRow: 4
-            isVisible: false
-          }
-          expectValues stateForBlockDecoration(presenter, blockDecoration3), {
-            decoration: blockDecoration3
-            screenRow: 5
-            isVisible: false
-          }
-          expectValues stateForBlockDecoration(presenter, blockDecoration4), {
-            decoration: blockDecoration4
-            screenRow: 10
-            isVisible: true
-          }
+          expect(stateForOffScreenBlockDecoration(presenter, blockDecoration1)).toBeUndefined()
+          expect(stateForOffScreenBlockDecoration(presenter, blockDecoration2)).toBe(blockDecoration2)
+          expect(stateForOffScreenBlockDecoration(presenter, blockDecoration3)).toBe(blockDecoration3)
+          expect(stateForOffScreenBlockDecoration(presenter, blockDecoration4)).toBeUndefined()
 
           presenter.invalidateBlockDecorationDimensions(blockDecoration1)
+          presenter.invalidateBlockDecorationDimensions(blockDecoration4)
           presenter.setBlockDecorationDimensions(blockDecoration2, 0, 10)
           presenter.setBlockDecorationDimensions(blockDecoration3, 0, 10)
+          expect(stateForOffScreenBlockDecoration(presenter, blockDecoration1)).toBeUndefined()
+          expect(stateForOffScreenBlockDecoration(presenter, blockDecoration2)).toBeUndefined()
+          expect(stateForOffScreenBlockDecoration(presenter, blockDecoration3)).toBeUndefined()
+          expect(stateForOffScreenBlockDecoration(presenter, blockDecoration4)).toBe(blockDecoration4)
 
-          expectValues stateForBlockDecoration(presenter, blockDecoration1), {
-            decoration: blockDecoration1
-            screenRow: 0
-            isVisible: false
-          }
-          expect(stateForBlockDecoration(presenter, blockDecoration2)).toBeUndefined()
-          expect(stateForBlockDecoration(presenter, blockDecoration3)).toBeUndefined()
-          expectValues stateForBlockDecoration(presenter, blockDecoration4), {
-            decoration: blockDecoration4
-            screenRow: 10
-            isVisible: true
-          }
+          blockDecoration4.destroy()
+          expect(stateForOffScreenBlockDecoration(presenter, blockDecoration1)).toBeUndefined()
+          expect(stateForOffScreenBlockDecoration(presenter, blockDecoration2)).toBeUndefined()
+          expect(stateForOffScreenBlockDecoration(presenter, blockDecoration3)).toBeUndefined()
+          expect(stateForOffScreenBlockDecoration(presenter, blockDecoration4)).toBeUndefined()
 
-          blockDecoration1.destroy()
+        it "contains state for off-screen block decorations that intersect a buffer change", ->
+          blockDecoration1 = addBlockDecorationBeforeScreenRow(9)
+          blockDecoration2 = addBlockDecorationBeforeScreenRow(10)
+          blockDecoration3 = addBlockDecorationBeforeScreenRow(11)
+          presenter = buildPresenter(explicitHeight: 30, lineHeight: 10, tileSize: 2, scrollTop: 0)
+          expect(stateForOffScreenBlockDecoration(presenter, blockDecoration1)).toBe(blockDecoration1)
+          expect(stateForOffScreenBlockDecoration(presenter, blockDecoration2)).toBe(blockDecoration2)
+          expect(stateForOffScreenBlockDecoration(presenter, blockDecoration3)).toBe(blockDecoration3)
 
-          expect(stateForBlockDecoration(presenter, blockDecoration1)).toBeUndefined()
-          expect(stateForBlockDecoration(presenter, blockDecoration2)).toBeUndefined()
-          expect(stateForBlockDecoration(presenter, blockDecoration3)).toBeUndefined()
-          expectValues stateForBlockDecoration(presenter, blockDecoration4), {
-            decoration: blockDecoration4
-            screenRow: 10
-            isVisible: true
-          }
+          presenter.setBlockDecorationDimensions(blockDecoration1, 0, 10)
+          presenter.setBlockDecorationDimensions(blockDecoration2, 0, 10)
+          presenter.setBlockDecorationDimensions(blockDecoration3, 0, 10)
+          expect(stateForOffScreenBlockDecoration(presenter, blockDecoration1)).toBeUndefined()
+          expect(stateForOffScreenBlockDecoration(presenter, blockDecoration2)).toBeUndefined()
+          expect(stateForOffScreenBlockDecoration(presenter, blockDecoration3)).toBeUndefined()
+
+          editor.setSelectedScreenRange([[10, 0], [12, 0]])
+          editor.delete()
+          presenter.setScrollTop(0) # deleting the buffer causes the editor to autoscroll
+          expect(stateForOffScreenBlockDecoration(presenter, blockDecoration1)).toBeUndefined()
+          expect(stateForOffScreenBlockDecoration(presenter, blockDecoration2)).toBe(blockDecoration2)
+          expect(stateForOffScreenBlockDecoration(presenter, blockDecoration3)).toBe(blockDecoration3)
+
+        it "contains state for all off-screen block decorations when content frame width, window size or bounding client rect change", ->
+          blockDecoration1 = addBlockDecorationBeforeScreenRow(10)
+          blockDecoration2 = addBlockDecorationBeforeScreenRow(11)
+          presenter = buildPresenter(explicitHeight: 30, lineHeight: 10, tileSize: 2, scrollTop: 0)
+          expect(stateForOffScreenBlockDecoration(presenter, blockDecoration1)).toBe(blockDecoration1)
+          expect(stateForOffScreenBlockDecoration(presenter, blockDecoration2)).toBe(blockDecoration2)
+
+          presenter.setBlockDecorationDimensions(blockDecoration1, 0, 10)
+          presenter.setBlockDecorationDimensions(blockDecoration2, 0, 10)
+          expect(stateForOffScreenBlockDecoration(presenter, blockDecoration1)).toBeUndefined()
+          expect(stateForOffScreenBlockDecoration(presenter, blockDecoration2)).toBeUndefined()
+
+          presenter.setBoundingClientRect({top: 0, left: 0, width: 50, height: 30})
+          expect(stateForOffScreenBlockDecoration(presenter, blockDecoration1)).toBe(blockDecoration1)
+          expect(stateForOffScreenBlockDecoration(presenter, blockDecoration2)).toBe(blockDecoration2)
+
+          presenter.setBlockDecorationDimensions(blockDecoration1, 0, 20)
+          presenter.setBlockDecorationDimensions(blockDecoration2, 0, 20)
+          expect(stateForOffScreenBlockDecoration(presenter, blockDecoration1)).toBeUndefined()
+          expect(stateForOffScreenBlockDecoration(presenter, blockDecoration2)).toBeUndefined()
+
+          presenter.setContentFrameWidth(100)
+          expect(stateForOffScreenBlockDecoration(presenter, blockDecoration1)).toBe(blockDecoration1)
+          expect(stateForOffScreenBlockDecoration(presenter, blockDecoration2)).toBe(blockDecoration2)
+
+          presenter.setBlockDecorationDimensions(blockDecoration1, 0, 20)
+          presenter.setBlockDecorationDimensions(blockDecoration2, 0, 20)
+          expect(stateForOffScreenBlockDecoration(presenter, blockDecoration1)).toBeUndefined()
+          expect(stateForOffScreenBlockDecoration(presenter, blockDecoration2)).toBeUndefined()
+
+          presenter.setWindowSize(100, 200)
+          expect(stateForOffScreenBlockDecoration(presenter, blockDecoration1)).toBe(blockDecoration1)
+          expect(stateForOffScreenBlockDecoration(presenter, blockDecoration2)).toBe(blockDecoration2)
+
+          presenter.setBlockDecorationDimensions(blockDecoration1, 0, 20)
+          presenter.setBlockDecorationDimensions(blockDecoration2, 0, 20)
+          expect(stateForOffScreenBlockDecoration(presenter, blockDecoration1)).toBeUndefined()
+          expect(stateForOffScreenBlockDecoration(presenter, blockDecoration2)).toBeUndefined()
 
         it "doesn't throw an error when setting the dimensions for a destroyed decoration", ->
           blockDecoration = addBlockDecorationBeforeScreenRow(0)
           presenter = buildPresenter()
-
           blockDecoration.destroy()
           presenter.setBlockDecorationDimensions(blockDecoration, 30, 30)
-
-          expect(getState(presenter).content.blockDecorations).toEqual({})
+          expect(getState(presenter).content.offScreenBlockDecorations).toEqual({})
 
       describe ".overlays", ->
         [item] = []
@@ -2589,13 +2527,13 @@ describe "TextEditorPresenter", ->
               pixelPosition: {top: 1 * 10, left: 26 * 10 + gutterWidth - scrollLeft}
             }
 
-            expectStateUpdate presenter, -> editor.insertText('a')
+            expectStateUpdate presenter, -> editor.insertText('abc', autoscroll: false)
             expectValues stateForOverlay(presenter, decoration), {
               item: item
               pixelPosition: {top: 1 * 10, left: windowWidth - itemWidth}
             }
 
-            expectStateUpdate presenter, -> editor.insertText('b')
+            expectStateUpdate presenter, -> editor.insertText('d', autoscroll: false)
             expectValues stateForOverlay(presenter, decoration), {
               item: item
               pixelPosition: {top: 1 * 10, left: windowWidth - itemWidth}
@@ -2616,12 +2554,53 @@ describe "TextEditorPresenter", ->
             }
 
             expectStateUpdate presenter, ->
-              editor.insertNewline()
-              presenter.setScrollTop(scrollTop) # I'm fighting the editor
+              editor.insertNewline(autoscroll: false)
 
             expectValues stateForOverlay(presenter, decoration), {
               item: item
               pixelPosition: {top: 6 * 10 - scrollTop - itemHeight, left: gutterWidth}
+            }
+
+          it "when avoidOverflow is false, does not move horizontally when overflowing the editor's scrollView horizontally", ->
+            scrollLeft = 20
+            marker = editor.markBufferPosition([0, 26], invalidate: 'never')
+            decoration = editor.decorateMarker(marker, {type: 'overlay', item, avoidOverflow: false})
+
+            presenter = buildPresenter({scrollLeft, windowWidth, windowHeight, contentFrameWidth, boundingClientRect, gutterWidth})
+            expectStateUpdate presenter, ->
+              presenter.setOverlayDimensions(decoration.id, itemWidth, itemHeight, contentMargin)
+
+            expectValues stateForOverlay(presenter, decoration), {
+              item: item
+              pixelPosition: {top: 1 * 10, left: 26 * 10 + gutterWidth - scrollLeft}
+            }
+
+            expectStateUpdate presenter, -> editor.insertText('a', autoscroll: false)
+            expectValues stateForOverlay(presenter, decoration), {
+              item: item
+              pixelPosition: {top: 1 * 10, left: 27 * 10 + gutterWidth - scrollLeft}
+            }
+
+          it "when avoidOverflow is false, does not flip vertically when overflowing the editor's scrollView vertically", ->
+            scrollTop = 10
+            marker = editor.markBufferPosition([5, 0], invalidate: 'never')
+            decoration = editor.decorateMarker(marker, {type: 'overlay', item, avoidOverflow: false})
+
+            presenter = buildPresenter({scrollTop, windowWidth, windowHeight, contentFrameWidth, boundingClientRect, gutterWidth})
+            expectStateUpdate presenter, ->
+              presenter.setOverlayDimensions(decoration.id, itemWidth, itemHeight, contentMargin)
+
+            expectValues stateForOverlay(presenter, decoration), {
+              item: item
+              pixelPosition: {top: 6 * 10 - scrollTop, left: gutterWidth}
+            }
+
+            expectStateUpdate presenter, ->
+              editor.insertNewline(autoscroll: false)
+
+            expectValues stateForOverlay(presenter, decoration), {
+              item: item
+              pixelPosition: {top: 7 * 10 - scrollTop, left: gutterWidth}
             }
 
           describe "when the overlay item has a margin", ->
@@ -2844,7 +2823,7 @@ describe "TextEditorPresenter", ->
             expect(getLineNumberGutterState(presenter).content.maxLineNumberDigits).toBe 2
 
             editor.setText("1\n2\n3")
-            expect(getLineNumberGutterState(presenter).content.maxLineNumberDigits).toBe 1
+            expect(getLineNumberGutterState(presenter).content.maxLineNumberDigits).toBe 2
 
         describe ".content.tiles", ->
           lineNumberStateForScreenRow = (presenter, screenRow) ->
@@ -3667,7 +3646,7 @@ describe "TextEditorPresenter", ->
 
     performSetup = ->
       buffer = new TextBuffer
-      editor = atom.workspace.buildTextEditor({buffer})
+      editor = new TextEditor({buffer})
       editor.setEditorWidthInChars(80)
       presenterParams =
         model: editor

@@ -1,4 +1,5 @@
 'use strict'
+
 const assert = require('assert')
 const childProcess = require('child_process')
 const electronPackager = require('electron-packager')
@@ -20,8 +21,8 @@ module.exports = function () {
     'app-bundle-id': 'com.tmall.thera',
     'app-copyright': `Copyright © 2014-${(new Date()).getFullYear()} GitHub, Inc. All rights reserved.`,
     'app-version': CONFIG.appMetadata.version,
-    'arch': process.platform === 'win32' ? 'ia32' : 'x64',
-    'asar': {unpack: buildAsarUnpackGlobExpression()},
+    'arch': process.platform === 'darwin' ? 'x64' : process.arch, // OS X is 64-bit only
+    //'asar': {unpack: buildAsarUnpackGlobExpression()},
     'build-version': CONFIG.appMetadata.version,
     'download': {cache: CONFIG.electronDownloadPath},
     'dir': CONFIG.intermediateAppPath,
@@ -53,9 +54,9 @@ module.exports = function () {
     // install attaching packages
     installAttachPackages(packagedAppPath, bundledResourcesPath)
 
-    copyAttachResources(packagedAppPath, bundledResourcesPath)
+    // copyAttachResources(packagedAppPath, bundledResourcesPath)
 
-    copyResourceInPackage(packagedAppPath, bundledResourcesPath)
+    // copyResourceInPackage(packagedAppPath, bundledResourcesPath)
 
     return copyNonASARResources(packagedAppPath, bundledResourcesPath).then(() => {
       console.log(`Application bundle created at ${packagedAppPath}`)
@@ -116,6 +117,13 @@ function installAttachPackages (packagedAppPath, bundledResourcesPath) {
         )
       }
     })
+
+    console.log(`Rebuild attach package from ${path.join(CONFIG.repositoryRootPath, 'attach-package')}`)
+    childProcess.execFileSync(
+      CONFIG.getNpmBinPath(),
+      ['rebuild', '--runtime=electron', '--target=1.3.6', '--disturl=https://atom.io/download/atom-shell', '--abi=49'],
+      {env: process.env, cwd: path.join(CONFIG.repositoryRootPath, 'attach-package'), stdio:'inherit'}
+    )
 
     console.log(`Copy attach package from ${path.join(CONFIG.repositoryRootPath, 'attach-package', 'node_modules')} to ${path.join(bundledResourcesPath, 'attach-package')}`)
     mkdirp.sync(path.join(bundledResourcesPath, 'attach-package'))
@@ -192,10 +200,10 @@ function copyNonASARResources (packagedAppPath, bundledResourcesPath) {
     {filter: includePathInPackagedApp}
   )
 
-  fs.copySync(
-    path.join(CONFIG.repositoryRootPath, 'package.json'),
-    path.join(path.join(bundledResourcesPath, 'package.json'))
-  )
+  // fs.copySync(
+  //   path.join(CONFIG.repositoryRootPath, 'package.json'),
+  //   path.join(path.join(bundledResourcesPath, 'package.json'))
+  // )
 
   if (process.platform !== 'win32') {
     // Existing symlinks on user systems point to an outdated path, so just symlink it to the real location of the apm binary.
@@ -208,10 +216,9 @@ function copyNonASARResources (packagedAppPath, bundledResourcesPath) {
   } else if (process.platform === 'linux') {
     fs.copySync(path.join(CONFIG.repositoryRootPath, 'resources', 'app-icons', CONFIG.channel, 'png', '1024.png'), path.join(packagedAppPath, 'atom.png'))
   } else if (process.platform === 'win32') {
-    [ 'atom.cmd', 'atom.sh', 'atom.js', 'apm.cmd', 'apm.sh', 'file.ico' ]
+    [ 'atom.cmd', 'atom.sh', 'atom.js', 'apm.cmd', 'apm.sh', 'file.ico', 'folder.ico' ]
       .forEach(file => fs.copySync(path.join('resources', 'win', file), path.join(bundledResourcesPath, 'cli', file)))
   }
-  
 
   console.log(`Writing LICENSE.md to ${bundledResourcesPath}`)
   return getLicenseText().then((licenseText) => {
@@ -305,6 +312,9 @@ function renamePackagedAppDir (packageOutputDirPath) {
   } else {
     const appName = CONFIG.channel === 'beta' ? 'Thera Beta' : 'Thera'
     packagedAppPath = path.join(CONFIG.buildOutputPath, appName)
+    if (process.platform === 'win32' && process.arch !== 'ia32') {
+      packagedAppPath += ` ${process.arch}`
+    }
     if (fs.existsSync(packagedAppPath)) fs.removeSync(packagedAppPath)
     fs.renameSync(packageOutputDirPath, packagedAppPath)
   }

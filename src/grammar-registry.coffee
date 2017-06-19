@@ -1,5 +1,4 @@
 _ = require 'underscore-plus'
-{Emitter} = require 'event-kit'
 FirstMate = require 'first-mate'
 Token = require './token'
 fs = require 'fs-plus'
@@ -16,7 +15,7 @@ PathSplitRegex = new RegExp("[/.]")
 module.exports =
 class GrammarRegistry extends FirstMate.GrammarRegistry
   constructor: ({@config}={}) ->
-    super(maxTokensPerLine: 100)
+    super(maxTokensPerLine: 100, maxLineLength: 1000)
 
   createToken: (value, scopes) -> new Token({value, scopes})
 

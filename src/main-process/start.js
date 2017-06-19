@@ -1,10 +1,10 @@
 const {app} = require('electron')
-const fs = require('fs-plus')
 const nslog = require('nslog')
 const path = require('path')
 const temp = require('temp')
 const parseCommandLine = require('./parse-command-line')
 const startCrashReporter = require('../crash-reporter-start')
+const atomPaths = require('../atom-paths')
 
 module.exports = function start (resourcePath, startTime) {
   global.shellStartTime = startTime
@@ -23,7 +23,8 @@ module.exports = function start (resourcePath, startTime) {
   console.log = nslog
 
   const args = parseCommandLine(process.argv.slice(1))
-  setupAtomHome(args)
+  atomPaths.setAtomHome(app.getPath('home'))
+  atomPaths.setUserData(app)
   setupCompileCache()
 
   if (handleStartupEventWithSquirrel()) {
@@ -39,7 +40,7 @@ module.exports = function start (resourcePath, startTime) {
   }
 
   // NB: This prevents Win10 from showing dupe items in the taskbar
-  app.setAppUserModelId('com.squirrel.atom.atom')
+  app.setAppUserModelId('com.squirrel.atom.' + process.arch)
 
   function addPathToOpen (event, pathToOpen) {
     event.preventDefault()
@@ -57,11 +58,9 @@ module.exports = function start (resourcePath, startTime) {
 
   if (args.userDataDir != null) {
     app.setPath('userData', args.userDataDir)
-  } else if (args.test) {
+  } else if (args.test || args.benchmark || args.benchmarkTest) {
     app.setPath('userData', temp.mkdirSync('atom-test-data'))
   }
-
-  setupJavaScriptArguments()
 
   app.on('ready', function () {
     app.removeListener('open-file', addPathToOpen)
@@ -69,6 +68,8 @@ module.exports = function start (resourcePath, startTime) {
     const AtomApplication = require(path.join(args.resourcePath, 'src', 'main-process', 'atom-application'))
     AtomApplication.open(args)
   })
+
+  setupJavaScriptArguments()
 }
 
 // setup command line param for chrome
@@ -87,38 +88,8 @@ function handleStartupEventWithSquirrel () {
   return SquirrelUpdate.handleStartupEvent(app, squirrelCommand)
 }
 
-function setupAtomHome ({setPortable}) {
-  if (process.env.ATOM_HOME) {
-    return
-  }
-
-  // let atomHome = path.join(app.getPath('home'), '.atom')
-  let atomHome = path.join(app.getPath('home'), '.thera')
-  const AtomPortable = require('./atom-portable')
-
-  if (setPortable && !AtomPortable.isPortableInstall(process.platform, process.env.ATOM_HOME, atomHome)) {
-    try {
-      AtomPortable.setPortable(atomHome)
-    } catch (error) {
-      console.log(`Failed copying portable directory '${atomHome}' to '${AtomPortable.getPortableAtomHomePath()}'`)
-      console.log(`${error.message} ${error.stack}`)
-    }
-  }
-
-  if (AtomPortable.isPortableInstall(process.platform, process.env.ATOM_HOME, atomHome)) {
-    atomHome = AtomPortable.getPortableAtomHomePath()
-  }
-
-  try {
-    atomHome = fs.realpathSync(atomHome)
-  } catch (e) {
-    // Don't throw an error if atomHome doesn't exist.
-  }
-
-  process.env.ATOM_HOME = atomHome
-}
-
 function setupCompileCache () {
   const CompileCache = require('../compile-cache')
   CompileCache.setAtomHomeDirectory(process.env.ATOM_HOME)
+  CompileCache.install(process.resourcesPath, require)
 }

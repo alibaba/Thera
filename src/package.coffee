@@ -6,6 +6,7 @@ CSON = require 'season'
 fs = require 'fs-plus'
 {Emitter, CompositeDisposable} = require 'event-kit'
 
+CompileCache = require './compile-cache'
 ModuleCache = require './module-cache'
 ScopedProperties = require './scoped-properties'
 BufferedProcess = require './buffered-process'
@@ -23,6 +24,7 @@ class Package
   mainModulePath: null
   resolvedMainModulePath: false
   mainModule: null
+  mainInitialized: false
   mainActivated: false
 
   ###
@@ -31,16 +33,15 @@ class Package
 
   constructor: (params) ->
     {
-      @path, @metadata, @packageManager, @config, @styleManager, @commandRegistry,
-      @keymapManager, @devMode, @notificationManager, @grammarRegistry, @themeManager,
+      @path, @metadata, @bundledPackage, @preloadedPackage, @packageManager, @config, @styleManager, @commandRegistry,
+      @keymapManager, @notificationManager, @grammarRegistry, @themeManager,
       @menuManager, @contextMenuManager, @deserializerManager, @viewRegistry
     } = params
 
     @emitter = new Emitter
     @metadata ?= @packageManager.loadPackageMetadata(@path)
-    @bundledPackage = @packageManager.isBundledPackagePath(@path)
-    @name = @metadata?.name ? path.basename(@path)
-    ModuleCache.add(@path, @metadata)
+    @bundledPackage ?= @packageManager.isBundledPackagePath(@path)
+    @name = @metadata?.name ? params.name ? path.basename(@path)
     @reset()
 
   ###
@@ -78,14 +79,42 @@ class Package
 
   getStyleSheetPriority: -> 0
 
+  preload: ->
+    @loadKeymaps()
+    @loadMenus()
+    @registerDeserializerMethods()
+    @activateCoreStartupServices()
+    @configSchemaRegisteredOnLoad = @registerConfigSchemaFromMetadata()
+    @requireMainModule()
+    @settingsPromise = @loadSettings()
+
+    @activationDisposables = new CompositeDisposable
+    @activateKeymaps()
+    @activateMenus()
+    settings.activate() for settings in @settings
+    @settingsActivated = true
+
+  finishLoading: ->
+    @measure 'loadTime', =>
+      @path = path.join(@packageManager.resourcePath, @path)
+      ModuleCache.add(@path, @metadata)
+
+      @loadStylesheets()
+      # Unfortunately some packages are accessing `@mainModulePath`, so we need
+      # to compute that variable eagerly also for preloaded packages.
+      @getMainModulePath()
+
   load: ->
     @measure 'loadTime', =>
       try
+        ModuleCache.add(@path, @metadata)
+
         @loadKeymaps()
         @loadMenus()
         @loadStylesheets()
         @registerDeserializerMethods()
         @activateCoreStartupServices()
+        @registerTranspilerConfig()
         @configSchemaRegisteredOnLoad = @registerConfigSchemaFromMetadata()
         @settingsPromise = @loadSettings()
         if @shouldRequireMainModuleOnLoad() and not @mainModule?
@@ -93,6 +122,9 @@ class Package
       catch error
         @handleError("Failed to load the #{@name} package", error)
     this
+
+  unload: ->
+    @unregisterTranspilerConfig()
 
   shouldRequireMainModuleOnLoad: ->
     not (
@@ -109,7 +141,23 @@ class Package
     @menus = []
     @grammars = []
     @settings = []
+    @mainInitialized = false
     @mainActivated = false
+
+  initializeIfNeeded: ->
+    return if @mainInitialized
+    @measure 'initializeTime', =>
+      try
+        # The main module's `initialize()` method is guaranteed to be called
+        # before its `activate()`. This gives you a chance to handle the
+        # serialized package state before the package's derserializers and view
+        # providers are used.
+        @requireMainModule() unless @mainModule?
+        @mainModule.initialize?(@packageManager.getPackageState(@name) ? {})
+        @mainInitialized = true
+      catch error
+        @handleError("Failed to initialize the #{@name} package", error)
+    return
 
   activate: ->
     @grammarsPromise ?= @loadGrammars()
@@ -135,12 +183,16 @@ class Package
       @registerViewProviders()
       @activateStylesheets()
       if @mainModule? and not @mainActivated
+        @initializeIfNeeded()
         @mainModule.activateConfig?()
         @mainModule.activate?(@packageManager.getPackageState(@name) ? {})
         @mainActivated = true
         @activateServices()
+      @activationCommandSubscriptions?.dispose()
+      @activationHookSubscriptions?.dispose()
     catch error
       @handleError("Failed to activate the #{@name} package", error)
+      console.warn(error)
 
     @resolveActivationPromise?()
 
@@ -178,44 +230,46 @@ class Package
       else
         context = undefined
 
-      @stylesheetDisposables.add(@styleManager.addStyleSheet(source, {sourcePath, priority, context}))
+      @stylesheetDisposables.add(
+        @styleManager.addStyleSheet(
+          source,
+          {
+            sourcePath,
+            priority,
+            context,
+            skipDeprecatedSelectorsTransformation: @bundledPackage
+          }
+        )
+      )
     @stylesheetsActivated = true
 
   activateResources: ->
-    @activationDisposables = new CompositeDisposable
+    @activationDisposables ?= new CompositeDisposable
 
     keymapIsDisabled = _.include(@config.get("core.packagesWithKeymapsDisabled") ? [], @name)
     if keymapIsDisabled
       @deactivateKeymaps()
-    else
+    else unless @keymapActivated
       @activateKeymaps()
 
-    for [menuPath, map] in @menus when map['context-menu']?
-      try
-        itemsBySelector = map['context-menu']
-        @activationDisposables.add(@contextMenuManager.add(itemsBySelector))
-      catch error
-        if error.code is 'EBADSELECTOR'
-          error.message += " in #{menuPath}"
-          error.stack += "\n  at #{menuPath}:1:1"
-        throw error
-
-    # forbid package modify menu bar
-    # @activationDisposables.add(@menuManager.add(map['menu'])) for [menuPath, map] in @menus when map['menu']?
+    unless @menusActivated
+      @activateMenus()
 
     unless @grammarsActivated
       grammar.activate() for grammar in @grammars
       @grammarsActivated = true
 
-    settings.activate() for settings in @settings
-    @settingsActivated = true
+    unless @settingsActivated
+      settings.activate() for settings in @settings
+      @settingsActivated = true
 
   activateKeymaps: ->
     return if @keymapActivated
 
     @keymapDisposables = new CompositeDisposable()
 
-    @keymapDisposables.add(@keymapManager.add(keymapPath, map)) for [keymapPath, map] in @keymaps
+    validateSelectors = not @preloadedPackage
+    @keymapDisposables.add(@keymapManager.add(keymapPath, map, 0, validateSelectors)) for [keymapPath, map] in @keymaps
     @menuManager.update()
 
     @keymapActivated = true
@@ -234,6 +288,23 @@ class Package
         return true
     false
 
+  activateMenus: ->
+    validateSelectors = not @preloadedPackage
+    for [menuPath, map] in @menus when map['context-menu']?
+      try
+        itemsBySelector = map['context-menu']
+        @activationDisposables.add(@contextMenuManager.add(itemsBySelector, validateSelectors))
+      catch error
+        if error.code is 'EBADSELECTOR'
+          error.message += " in #{menuPath}"
+          error.stack += "\n  at #{menuPath}:1:1"
+        throw error
+
+    for [menuPath, map] in @menus when map['menu']?
+      @activationDisposables.add(@menuManager.add(map['menu']))
+
+    @menusActivated = true
+
   activateServices: ->
     for name, {versions} of @metadata.providedServices
       servicesByVersion = {}
@@ -248,16 +319,24 @@ class Package
           @activationDisposables.add @packageManager.serviceHub.consume(name, version, @mainModule[methodName].bind(@mainModule))
     return
 
+  registerTranspilerConfig: ->
+    if @metadata.atomTranspilers
+      CompileCache.addTranspilerConfigForPath(@path, @name, @metadata, @metadata.atomTranspilers)
+
+  unregisterTranspilerConfig: ->
+    if @metadata.atomTranspilers
+      CompileCache.removeTranspilerConfigForPath(@path)
+
   loadKeymaps: ->
     if @bundledPackage and @packageManager.packagesCache[@name]?
-      @keymaps = (["#{@packageManager.resourcePath}#{path.sep}#{keymapPath}", keymapObject] for keymapPath, keymapObject of @packageManager.packagesCache[@name].keymaps)
+      @keymaps = (["core:#{keymapPath}", keymapObject] for keymapPath, keymapObject of @packageManager.packagesCache[@name].keymaps)
     else
       @keymaps = @getKeymapPaths().map (keymapPath) -> [keymapPath, CSON.readFileSync(keymapPath, allowDuplicateKeys: false) ? {}]
     return
 
   loadMenus: ->
     if @bundledPackage and @packageManager.packagesCache[@name]?
-      @menus = (["#{@packageManager.resourcePath}#{path.sep}#{menuPath}", menuObject] for menuPath, menuObject of @packageManager.packagesCache[@name].menus)
+      @menus = (["core:#{menuPath}", menuObject] for menuPath, menuObject of @packageManager.packagesCache[@name].menus)
     else
       @menus = @getMenuPaths().map (menuPath) -> [menuPath, CSON.readFileSync(menuPath) ? {}]
     return
@@ -284,11 +363,12 @@ class Package
     if @metadata.deserializers?
       Object.keys(@metadata.deserializers).forEach (deserializerName) =>
         methodName = @metadata.deserializers[deserializerName]
-        atom.deserializers.add
+        @deserializerManager.add
           name: deserializerName,
           deserialize: (state, atomEnvironment) =>
             @registerViewProviders()
             @requireMainModule()
+            @initializeIfNeeded()
             @mainModule[methodName](state, atomEnvironment)
       return
 
@@ -306,6 +386,7 @@ class Package
       @requireMainModule()
       @metadata.viewProviders.forEach (methodName) =>
         @viewRegistry.addViewProvider (model) =>
+          @initializeIfNeeded()
           @mainModule[methodName](model)
       @registeredViewProviders = true
 
@@ -313,22 +394,32 @@ class Package
     path.join(@path, 'styles')
 
   getStylesheetPaths: ->
-    stylesheetDirPath = @getStylesheetsPath()
-    if @metadata.mainStyleSheet
-      [fs.resolve(@path, @metadata.mainStyleSheet)]
-    else if @metadata.styleSheets
-      @metadata.styleSheets.map (name) -> fs.resolve(stylesheetDirPath, name, ['css', 'less', ''])
-    else if indexStylesheet = fs.resolve(@path, 'index', ['css', 'less'])
-      [indexStylesheet]
+    if @bundledPackage and @packageManager.packagesCache[@name]?.styleSheetPaths?
+      styleSheetPaths = @packageManager.packagesCache[@name].styleSheetPaths
+      styleSheetPaths.map (styleSheetPath) => path.join(@path, styleSheetPath)
     else
-      fs.listSync(stylesheetDirPath, ['css', 'less'])
+      stylesheetDirPath = @getStylesheetsPath()
+      if @metadata.mainStyleSheet
+        [fs.resolve(@path, @metadata.mainStyleSheet)]
+      else if @metadata.styleSheets
+        @metadata.styleSheets.map (name) -> fs.resolve(stylesheetDirPath, name, ['css', 'less', ''])
+      else if indexStylesheet = fs.resolve(@path, 'index', ['css', 'less'])
+        [indexStylesheet]
+      else
+        fs.listSync(stylesheetDirPath, ['css', 'less'])
 
   loadGrammarsSync: ->
     return if @grammarsLoaded
 
-    grammarsDirPath = path.join(@path, 'grammars')
-    grammarPaths = fs.listSync(grammarsDirPath, ['json', 'cson'])
+    if @preloadedPackage and @packageManager.packagesCache[@name]?
+      grammarPaths = @packageManager.packagesCache[@name].grammarPaths
+    else
+      grammarPaths = fs.listSync(path.join(@path, 'grammars'), ['json', 'cson'])
+
     for grammarPath in grammarPaths
+      if @preloadedPackage and @packageManager.packagesCache[@name]?
+        grammarPath = path.resolve(@packageManager.resourcePath, grammarPath)
+
       try
         grammar = @grammarRegistry.readGrammarSync(grammarPath)
         grammar.packageName = @name
@@ -345,6 +436,9 @@ class Package
     return Promise.resolve() if @grammarsLoaded
 
     loadGrammar = (grammarPath, callback) =>
+      if @preloadedPackage
+        grammarPath = path.resolve(@packageManager.resourcePath, grammarPath)
+
       @grammarRegistry.readGrammar grammarPath, (error, grammar) =>
         if error?
           detail = "#{error.message} in #{grammarPath}"
@@ -358,12 +452,16 @@ class Package
         callback()
 
     new Promise (resolve) =>
-      grammarsDirPath = path.join(@path, 'grammars')
-      fs.exists grammarsDirPath, (grammarsDirExists) ->
-        return resolve() unless grammarsDirExists
+      if @preloadedPackage and @packageManager.packagesCache[@name]?
+        grammarPaths = @packageManager.packagesCache[@name].grammarPaths
+        async.each grammarPaths, loadGrammar, -> resolve()
+      else
+        grammarsDirPath = path.join(@path, 'grammars')
+        fs.exists grammarsDirPath, (grammarsDirExists) ->
+          return resolve() unless grammarsDirExists
 
-        fs.list grammarsDirPath, ['json', 'cson'], (error, grammarPaths=[]) ->
-          async.each grammarPaths, loadGrammar, -> resolve()
+          fs.list grammarsDirPath, ['json', 'cson'], (error, grammarPaths=[]) ->
+            async.each grammarPaths, loadGrammar, -> resolve()
 
   loadSettings: ->
     @settings = []
@@ -380,13 +478,19 @@ class Package
         callback()
 
     new Promise (resolve) =>
-      settingsDirPath = path.join(@path, 'settings')
+      if @preloadedPackage and @packageManager.packagesCache[@name]?
+        for settingsPath, scopedProperties of @packageManager.packagesCache[@name].settings
+          settings = new ScopedProperties("core:#{settingsPath}", scopedProperties ? {}, @config)
+          @settings.push(settings)
+          settings.activate() if @settingsActivated
+        resolve()
+      else
+        settingsDirPath = path.join(@path, 'settings')
+        fs.exists settingsDirPath, (settingsDirExists) ->
+          return resolve() unless settingsDirExists
 
-      fs.exists settingsDirPath, (settingsDirExists) ->
-        return resolve() unless settingsDirExists
-
-        fs.list settingsDirPath, ['json', 'cson'], (error, settingsPaths=[]) ->
-          async.each settingsPaths, loadSettingsFile, -> resolve()
+          fs.list settingsDirPath, ['json', 'cson'], (error, settingsPaths=[]) ->
+            async.each settingsPaths, loadSettingsFile, -> resolve()
 
   serialize: ->
     if @mainActivated
@@ -408,6 +512,7 @@ class Package
         @mainModule?.deactivate?()
         @mainModule?.deactivateConfig?()
         @mainActivated = false
+        @mainInitialized = false
       catch e
         console.error "Error deactivating package '#{@name}'", e.stack
     @emitter.emit 'did-deactivate'
@@ -421,10 +526,9 @@ class Package
     @stylesheetsActivated = false
     @grammarsActivated = false
     @settingsActivated = false
+    @menusActivated = false
 
   reloadStylesheets: ->
-    oldSheets = _.clone(@stylesheets)
-
     try
       @loadStylesheets()
     catch error
@@ -436,23 +540,28 @@ class Package
     @activateStylesheets()
 
   requireMainModule: ->
-    return @mainModule if @mainModuleRequired
-    unless @isCompatible()
+    if @bundledPackage and @packageManager.packagesCache[@name]?
+      if @packageManager.packagesCache[@name].main?
+        @mainModule = require(@packageManager.packagesCache[@name].main)
+    else if @mainModuleRequired
+      @mainModule
+    else if not @isCompatible()
       console.warn """
         Failed to require the main module of '#{@name}' because it requires one or more incompatible native modules (#{_.pluck(@incompatibleModules, 'name').join(', ')}).
         Run `apm rebuild` in the package directory and restart Atom to resolve.
       """
       return
-    mainModulePath = @getMainModulePath()
-    if fs.isFileSync(mainModulePath)
-      @mainModuleRequired = true
+    else
+      mainModulePath = @getMainModulePath()
+      if fs.isFileSync(mainModulePath)
+        @mainModuleRequired = true
 
-      previousViewProviderCount = @viewRegistry.getViewProviderCount()
-      previousDeserializerCount = @deserializerManager.getDeserializerCount()
-      @mainModule = require(mainModulePath)
-      if (@viewRegistry.getViewProviderCount() is previousViewProviderCount and
-          @deserializerManager.getDeserializerCount() is previousDeserializerCount)
-        localStorage.setItem(@getCanDeferMainModuleRequireStorageKey(), 'true')
+        previousViewProviderCount = @viewRegistry.getViewProviderCount()
+        previousDeserializerCount = @deserializerManager.getDeserializerCount()
+        @mainModule = require(mainModulePath)
+        if (@viewRegistry.getViewProviderCount() is previousViewProviderCount and
+            @deserializerManager.getDeserializerCount() is previousDeserializerCount)
+          localStorage.setItem(@getCanDeferMainModuleRequireStorageKey(), 'true')
 
   getMainModulePath: ->
     return @mainModulePath if @resolvedMainModulePath
@@ -460,7 +569,7 @@ class Package
 
     if @bundledPackage and @packageManager.packagesCache[@name]?
       if @packageManager.packagesCache[@name].main
-        @mainModulePath = "#{@packageManager.resourcePath}#{path.sep}#{@packageManager.packagesCache[@name].main}"
+        @mainModulePath = path.resolve(@packageManager.resourcePath, 'static', @packageManager.packagesCache[@name].main)
       else
         @mainModulePath = null
     else
@@ -469,7 +578,7 @@ class Package
           path.join(@path, @metadata.main)
         else
           path.join(@path, 'index')
-      @mainModulePath = fs.resolveExtension(mainModulePath, ["", _.keys(require.extensions)...])
+      @mainModulePath = fs.resolveExtension(mainModulePath, ["", CompileCache.supportedExtensions...])
 
   activationShouldBeDeferred: ->
     @hasActivationCommands() or @hasActivationHooks()
@@ -595,8 +704,8 @@ class Package
   isCompatible: ->
     return @compatible if @compatible?
 
-    if @path.indexOf(path.join(@packageManager.resourcePath, 'node_modules') + path.sep) is 0
-      # Bundled packages are always considered compatible
+    if @preloadedPackage
+      # Preloaded packages are always considered compatible
       @compatible = true
     else if @getMainModulePath()
       @incompatibleModules = @getIncompatibleNativeModules()
@@ -656,7 +765,7 @@ class Package
   # This information is cached in local storage on a per package/version basis
   # to minimize the impact on startup time.
   getIncompatibleNativeModules: ->
-    unless @devMode
+    unless @packageManager.devMode
       try
         if arrayAsString = global.localStorage.getItem(@getIncompatibleNativeModulesStorageKey())
           return JSON.parse(arrayAsString)
@@ -678,6 +787,9 @@ class Package
     incompatibleNativeModules
 
   handleError: (message, error) ->
+    if atom.inSpecMode()
+      throw error
+
     if error.filename and error.location and (error instanceof SyntaxError)
       location = "#{error.filename}:#{error.location.first_line + 1}:#{error.location.first_column + 1}"
       detail = "#{error.message} in #{location}"

@@ -63,7 +63,7 @@ class LineTailManager
     delete @lineTails[message.key]
 
   getTextByLine: (line) ->
-    return null if @isHide
+    # return null if @isHide
 
     if @lineTailsGroupByLines[line] and @lineTailsGroupByLines[line].length > 0
       item = @findFirst line, @editor.getPath()

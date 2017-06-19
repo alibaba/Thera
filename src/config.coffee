@@ -1,6 +1,6 @@
 _ = require 'underscore-plus'
 fs = require 'fs-plus'
-{CompositeDisposable, Disposable, Emitter} = require 'event-kit'
+{Emitter} = require 'event-kit'
 CSON = require 'season'
 path = require 'path'
 async = require 'async'
@@ -373,11 +373,16 @@ class Config
     value
 
   # Created during initialization, available as `atom.config`
-  constructor: ({@configDirPath, @resourcePath, @notificationManager, @enablePersistence}={}) ->
+  constructor: ({@notificationManager, @enablePersistence}={}) ->
+    @clear()
+
+  initialize: ({@configDirPath, @resourcePath, projectHomeSchema}) ->
     if @enablePersistence?
       @configFilePath = fs.resolve(@configDirPath, 'config', ['json', 'cson'])
       @configFilePath ?= path.join(@configDirPath, 'config.cson')
-    @clear()
+
+    @schema.properties.core.properties.projectHome = projectHomeSchema
+    @defaultSettings.core.projectHome = projectHomeSchema.default
 
   clear: ->
     @emitter = new Emitter
@@ -561,7 +566,7 @@ class Config
   #  * `scopeDescriptor` The {ScopeDescriptor} with which the value is associated
   #  * `value` The value for the key-path
   getAll: (keyPath, options) ->
-    {scope, sources} = options if options?
+    {scope} = options if options?
     result = []
 
     if scope?
@@ -814,7 +819,7 @@ class Config
       relativePath = sourcePath.substring(templateConfigDirPath.length + 1)
       destinationPath = path.join(@configDirPath, relativePath)
       queue.push({sourcePath, destinationPath})
-    fs.traverseTree(templateConfigDirPath, onConfigDirFile, (path) -> true)
+    fs.traverseTree(templateConfigDirPath, onConfigDirFile, ((path) -> true), (->))
 
   loadUserConfig: ->
     return if @shouldNotAccessFileSystem()
@@ -1045,7 +1050,6 @@ class Config
   resetSettingsForSchemaChange: (source=@getUserConfigPath()) ->
     @transact =>
       @settings = @makeValueConformToSchema(null, @settings, suppressException: true)
-      priority = @priorityForSource(source)
       selectorsAndSettings = @scopedSettingsStore.propertiesForSource(source)
       @scopedSettingsStore.removePropertiesForSource(source)
       for scopeSelector, settings of selectorsAndSettings
