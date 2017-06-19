@@ -33,7 +33,7 @@
     "dedent": "^0.6.0",
     "devtron": "1.3.0",
     "atom-beautify": "git+https://github.com/TheraPackages/atom-beautify.git#v0.29.20",
-    "dumplings": "git+https://github.com/TheraPackages/dumplings.git#v2.0.5",
+    "dumplings": "git+https://github.com/TheraPackages/dumplings.git#v2.0.11",
     "linter": "git+https://github.com/TheraPackages/linter.git#v1.1.1",
     "we-syntax": "git+https://github.com/TheraPackages/we-syntax.git#v0.0.4",
     "autocomplete-weex": "git+https://github.com/TheraPackages/autocomplete-weex.git#v0.1.1",
@@ -104,7 +104,7 @@
   },
   "packageDependencies": {
     "atom-beautify": "0.29.20",
-    "dumplings": "2.0.5",
+    "dumplings": "2.0.11",
     "linter": "1.1.1",
     "we-syntax": "0.0.4",
     "autocomplete-weex": "0.1.1",
