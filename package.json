@@ -99,7 +99,8 @@
     "winreg": "^1.2.1",
     "thera-autocomplete-plus-plus": "git+https://github.com/TheraPackages/thera-autocomplete-plus-plus.git#v0.1.6",
     "thera-luaview": "git+https://github.com/TheraPackages/thera-luaview.git#v0.0.23",
-    "yargs": "^3.23.0"
+    "yargs": "^3.23.0",
+    "settings-view": "git+https://github.com/TheraPackages/settings-view.git#v0.250.1"
   },
   "packageDependencies": {
     "atom-beautify": "0.29.20",
@@ -161,7 +162,7 @@
     "notifications": "0.67.1",
     "open-on-github": "1.2.1",
     "package-generator": "1.1.1",
-    "settings-view": "0.249.4",
+    "settings-view": "0.250.1",
     "snippets": "1.1.4",
     "spell-check": "0.71.4",
     "status-bar": "1.8.8",
