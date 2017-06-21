@@ -107,7 +107,7 @@
     "linter": "1.1.1",
     "we-syntax": "0.0.4",
     "autocomplete-weex": "0.1.1",
-    "autocomplete-weexvue": "0.1.3",
+    "autocomplete-weexvue": "0.1.6",
     "atom-notifier": "0.5.4",
     "symbols-tree-view": "0.13.18",
     "linter-weex": "0.1.4",
