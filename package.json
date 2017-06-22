@@ -91,7 +91,7 @@
     "thera-background-tips": "git+https://github.com/TheraPackages/background-tips.git#v0.1.10",
     "thera-debug-frontend": "git+https://github.com/TheraPackages/thera-debug-frontend.git#v0.2.20",
     "thera-left-bar": "git+https://github.com/TheraPackages/thera-left-bar.git#v0.2.1",
-    "tool-bar": "git+https://github.com/TheraPackages/tool-bar.git#v1.0.13",
+    "tool-bar": "git+https://github.com/TheraPackages/tool-bar.git#v1.0.14",
     "tool-bar-main": "git+https://github.com/TheraPackages/tool-bar-main.git#v0.1.8",
     "typescript-simple": "1.0.0",
     "underscore-plus": "^1.6.6",
@@ -212,7 +212,7 @@
     "create-files": "0.0.2",
     "mainwindow": "0.1.21",
     "thera-debugger": "1.3.1",
-    "tool-bar": "1.0.13",
+    "tool-bar": "1.0.14",
     "tool-bar-main": "0.1.8",
     "thera-background-tips": "0.1.10"
   },
