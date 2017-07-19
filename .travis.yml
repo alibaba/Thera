@@ -14,7 +14,7 @@ install:
   - sh travis_before_script.sh
   # - sh travis_install_code_sign.sh
 # script: script/build --code-sign --compress-artifacts --deploy 
-# script: script/build
+script: echo "skip build"
 cache:
   directories:
   - electron
