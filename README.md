@@ -78,7 +78,7 @@ Download the latest [Thera release](https://github.com/alibaba/Thera/releases)
 The new skyscraper is still under construction.
 
 ## Building from source
-Guide to build from source [link](https://github.com/alibaba/Thera/wiki/How-to-build) (ios only).  
+Guide to build from source [link](https://github.com/alibaba/Thera/wiki/How-to-build-(macOS)) (macos only).  
 [thera packages](https://github.com/TheraPackages) is our packages. 
 
 ## Contribution guide
