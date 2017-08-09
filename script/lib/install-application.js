@@ -40,7 +40,7 @@ module.exports = function (packagedAppPath, installDir) {
   } else {
     const atomExecutableName = CONFIG.channel === 'beta' ? 'atom-beta' : 'atom'
     const apmExecutableName = CONFIG.channel === 'beta' ? 'apm-beta' : 'apm'
-    const appName = CONFIG.channel === 'beta' ? 'Atom Beta' : 'Atom'
+    const appName = CONFIG.channel === 'beta' ? 'Thera Beta' : 'Thera'
     const appDescription = CONFIG.appMetadata.description
     const prefixDirPath = installDir !== '' ? handleTilde(installDir) : path.join('/usr', 'local')
     const shareDirPath = path.join(prefixDirPath, 'share')
